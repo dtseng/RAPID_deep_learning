@@ -1,1 +1,1 @@
-# RAPID_deep_learning
+# RAPID Deep Learning Project
