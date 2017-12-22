@@ -1,14 +1,11 @@
-""" Support Vector Regressor implementation for comparison. """
+""" Implementation of a random forest regressor on whole images. """
 
 import scipy.misc
 import numpy as np
 import random
 import glob, os
-from sklearn.multioutput import MultiOutputRegressor
-from sklearn.svm import LinearSVR
+from sklearn.ensemble import RandomForestRegressor
 import pickle
-import time
-import sys
 
 # Utility function for shuffling training eamples and labels.
 def shuffle(X, Y):
@@ -44,27 +41,26 @@ class Data:
         if noise:
             self.x = np.clip(self.x + np.random.normal(0, noise*255, self.x.shape), 0, 255)
 
-# Training function for a single SVR model.
-def train_diff_levels(noise, size):
+# Training function for a single random forest model.
+def train_diff_levels(img_noise, size, depth, sim_noise):
     # Load data with specified amount of noise and number of examples.
-    data = Data(noise, size, imageFiles='./datasets/noise_0_alt/train_data/regular/*.png',
-                labelFiles='./datasets/noise_0_alt/train_data/regular/*.npy')
+    data = Data(img_noise, size, imageFiles="./datasets/noise_{0}_alt/train_data/regular/*.png".format(sim_noise), 
+                labelFiles="./datasets/noise_{0}_alt/train_data/regular/*.npy".format(sim_noise))
 
-    # Train the SVR.
-    svr = LinearSVR(tol=0.1, verbose=10)
-    multi_svr = MultiOutputRegressor(svr, n_jobs=-1)
-    multi_svr.fit(data.x / 255.0, data.y)
+    # Train random forest model.
+    rf = RandomForestRegressor(n_estimators=10, verbose=5, n_jobs=-1, max_depth=depth)
+    rf.fit(data.x / 255.0, data.y)
 
     # Save trained model.
-    pickle.dump(multi_svr, open("saved_models/svr/noise_{0}_training_{1}.ckpt".format(noise, size), 'wb'))
+    pickle.dump(rf, open("saved_models/forest/whole_image2/imgnoise_{0}_training_{1}_depth_{2}_simnoise_{3}.ckpt".format(img_noise, size, depth, sim_noise), 'wb'))
 
 # Load model trained with specified amount of noise and number of training examples and test on
 # data with specified level of image noise or simulation noise.
-def test_model(model_noise, model_training_size, image_noise, sim_noise):
+def test_model(model_img_noise, model_training_size, depth, model_sim_noise, image_noise, sim_noise):
     print("=========================================================")
 
     # Load trained model.
-    multi_svr = pickle.load(open("saved_models/svr/noise_{0}_training_{1}.ckpt".format(model_noise, model_training_size), 'rb'))
+    rf = pickle.load(open("saved_models/forest/whole_image2/imgnoise_{0}_training_{1}_depth_{2}_simnoise_{3}.ckpt".format(model_img_noise, model_training_size, depth, model_sim_noise), 'rb'))
     print("Model restored.")
 
     # Load test data.
@@ -72,8 +68,8 @@ def test_model(model_noise, model_training_size, image_noise, sim_noise):
                      labelFiles="./datasets/noise_{0}/test_data/regular/*.npy".format(sim_noise))
 
     # Compute absolute value difference between predictions and ground truth.
-    test_abs_difference = np.abs(multi_svr.predict(test_data.x / 255.0).flatten() - test_data.y.flatten())
-    print("Trained with noise {0} and model_training size {1} and tested with image noise {2} and sim noise {3}".format(model_noise, model_training_size, image_noise, sim_noise))
+    test_abs_difference = np.abs(rf.predict(test_data.x / 255.0).flatten() - test_data.y.flatten())
+    print("Trained with image noise {0}, model_training size {1}, and sim noise {2} and tested with image noise noise {3} and sim noise {4}".format(model_img_noise, model_training_size, model_sim_noise, image_noise, sim_noise))
     print("Mean:", np.mean(test_abs_difference))
     print("25th Percentile:", np.percentile(test_abs_difference, 25))
     print("50th percentile:", np.percentile(test_abs_difference, 50))
@@ -86,42 +82,48 @@ def test_model(model_noise, model_training_size, image_noise, sim_noise):
 
 # Training function for all experiments.
 def train_all_models():
-    # Training size experiment.
-    for training_size in [100, 200, 400, 600, 800]:
-        start_time = time.time()
-        train_diff_levels(0, training_size)
-        end_time = time.time()
+    MAX_DEPTH = 20
 
-        print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-        print("Number of Examples: " + str(training_size))
-        print("Training Time in Seconds: " + str(end_time - start_time))
-        print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+    # Main experiment.
+    start_time = time.time()
+    train_diff_levels(0, 1000, MAX_DEPTH, 0)
+    end_time = time.time()
+
+    print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+    print("Training Time in Seconds: " + str(end_time - start_time))
+    print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+
+    # Training size experiments.
+    for training_size in [25, 50, 100, 200, 400, 600, 800]:
+        train_diff_levels(0, training_size, MAX_DEPTH, 0)
 
 # Function for evaluating results for all models.
 def evaluate_all_models():
+    MAX_DEPTH = 20
+
     #============================Varying training size==========================================
     print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
     y_medians = []
     y_bottom_error = []
     y_top_error = []
     for size in [25, 100, 400, 1000, 2000]:
-        median, bottom, top = test_model(0, size, 0, 0)
+        median, bottom, top = test_model(0, size, MAX_DEPTH, 0, 0, 0)
         y_medians.append(median)
         y_bottom_error.append(bottom)
         y_top_error.append(top)
 
-    print("MEDIANS:", y_medians)
-    print("BOTTOM ERRORS:", y_bottom_error)
-    print("TOP ERRORS:", y_top_error)
+    print("MEDIAN:", y_medians)
+    print("BOTTOM ERROR:", y_bottom_error)
+    print("TOP ERROR:", y_top_error)
 
     #=============================Varying simulation noise===========================================
     print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-    print("Trained with no simulation noise and tested with noise")
+    print("Trained with sim noise 0 and tested with noise")
     y_medians = []
     y_bottom_error = []
     y_top_error = []
     for sim_noise in [0, 25, 50, 75, 100]:
-        median, bottom, top = test_model(0, 1000, 0, sim_noise)
+        median, bottom, top = test_model(0, 1000, MAX_DEPTH, 0, 0, sim_noise)
         y_medians.append(median)
         y_bottom_error.append(bottom)
         y_top_error.append(top)
@@ -132,12 +134,12 @@ def evaluate_all_models():
 
     #==============================Robustness to Image Noise===================================
     print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-    print("Trained with noise 0.25 and tested with noise:")
+    print("Trained with noise 0 and tested with noise:")
     y_medians = []
     y_bottom_error = []
     y_top_error = []
     for noise in [0, 0.25, 0.5, 0.75]:
-        median, bottom, top = test_model(0, 1000, noise, 0)
+        median, bottom, top = test_model(0.25, 1000, MAX_DEPTH, 0, noise, 0)
         y_medians.append(median)
         y_bottom_error.append(bottom)
         y_top_error.append(top)
