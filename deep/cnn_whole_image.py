@@ -121,7 +121,7 @@ def conv_net(x, weights, biases, dropout):
     # Apply dropout.
     fc1 = tf.nn.dropout(fc1, dropout)
 
-    # Output, class prediction
+    # Output (predictions).
     out = tf.add(tf.matmul(fc1, weights['w_out']), biases['b_out'])
 
     return out
@@ -213,7 +213,7 @@ def train_diff_levels(noise, size):
                 print("Predictions: ", sess.run(pred, feed_dict={x: batch_x, keep_prob: 1.}))
                 print("Actual: ", batch_y)
 
-                # Training statistics
+                # Training statistics.
                 train_loss, train_abs_error_mean, train_abs_error_stdev = sess.run([cost, abs_error_mean, abs_error_stdev], feed_dict={x: batch_x, y: batch_y, keep_prob: 1.})
                 print("Minibatch Loss={:.6f}".format(train_loss))
                 print("Minibatch Abs Loss={:.6f}".format(train_abs_error_mean))

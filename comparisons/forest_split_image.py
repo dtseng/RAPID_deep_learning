@@ -59,7 +59,7 @@ def process_image(fname):
 	
 	images = []
 
-    # Iterate through the image according to the order or the labels.
+    # Iterate through the image according to the order of the labels.
 	for y in range(20, 0, -1):
 		for x in range(10):
 			images.append(cropped[(y - 1) * img_height: y * img_height, x * img_width:(x + 1) * img_width, :].flatten())
