@@ -67,6 +67,8 @@ def precision_irrigation(predictor):
             # Run simulation for one timestep.
             vy.update(0)
 
+    print("TOTAL IRRIGATION PER PLANT PER TIMESTEP:", total_irrigation_used / 200.0 / 200.0 / 10.0)
+
 
 def main():
     predictor = predictions.Predictor("./saved_models/whole_image/noise_0_training_1000.ckpt", tf.Session())
