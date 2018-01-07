@@ -50,75 +50,80 @@ def conv_net(x, weights, biases, dropout):
 
     return out
 
-# Returns the vector of drainage rate predictions after running the image from the specified path
-# through the trained CNN over the entire image.
-def predictions(img):
-    # Input image dimensions.
-    in_height = 320
-    in_width = 320
+""" Predictor class for running inference on one of the trained models. """
+class Predictor():
+    # Restore the model for the predictor.
+    def __init__(self, checkpoint_file, session):
+        # Store session for running inference later on.
+        self.sess = session
 
-    n_input = in_height * in_width  # Total number of inputs.
-    n_outputs = 200 # Number of drainage rate predictions (number of plants in an image).
-    dropout = 0.75 # Dropout, probability to keep units
+        # Input image dimensions.
+        in_height = 320
+        in_width = 320
 
-    # Input tensor.
-    x = tf.placeholder(tf.float32, [None, in_height, in_width, 3], name='x_input')
+        n_input = in_height * in_width  # Total number of inputs.
+        n_outputs = 200 # Number of drainage rate predictions (number of plants in an image).
+        dropout = 0.75 # Dropout, probability to keep units
 
-    # Output tensor.
-    y = tf.placeholder(tf.float32, [None, n_outputs], name='y_output')
+        # Input tensor.
+        self.x = tf.placeholder(tf.float32, [None, in_height, in_width, 3], name='x_input')
 
-    # Keep probability for implementing dropout.
-    keep_prob = tf.placeholder(tf.float32)
+        # Output tensor.
+        self.y = tf.placeholder(tf.float32, [None, n_outputs], name='y_output')
 
-    # Weights initialized from zero-mean Gaussians with this standard deviation.
-    sd = 0.01
+        # Keep probability for implementing dropout.
+        self.keep_prob = tf.placeholder(tf.float32)
 
-    # Store layer weights and biases.
-    weights = {
-        # 5x5 conv, 1 input, 32 outputs
-        'wc1': tf.Variable(tf.random_normal([5, 5, 3, 32], stddev=sd)),
-        # 5x5 conv, 32 inputs, 64 outputs
-        'wc2': tf.Variable(tf.random_normal([5, 5, 32, 64], stddev=sd)),
-        # 5x5 conv, 64 inputs, 64 outputs
-        'wc3': tf.Variable(tf.random_normal([5, 5, 64, 64], stddev=sd)),
-        # fully connected, (320/8)*(320/8)*64 inputs, 1024 outputs
-        'wd1': tf.Variable(tf.random_normal([40*40*64, 1024], stddev=sd)),
-        # 1024 inputs, 200 outputs
-        'w_out': tf.Variable(tf.random_normal([1024, n_outputs], stddev=sd))
-    }
+        # Weights initialized from zero-mean Gaussians with this standard deviation.
+        sd = 0.01
 
-    biases = {
-        'bc1': tf.Variable(tf.zeros([32])),
-        'bc2': tf.Variable(tf.zeros([64])),
-        'bc3': tf.Variable(tf.zeros([64])),
-        'bd1': tf.Variable(tf.zeros([1024])),
-        'b_out': tf.Variable(tf.zeros([n_outputs]))
-    }
+        # Store layer weights and biases.
+        weights = {
+            # 5x5 conv, 1 input, 32 outputs
+            'wc1': tf.Variable(tf.random_normal([5, 5, 3, 32], stddev=sd)),
+            # 5x5 conv, 32 inputs, 64 outputs
+            'wc2': tf.Variable(tf.random_normal([5, 5, 32, 64], stddev=sd)),
+            # 5x5 conv, 64 inputs, 64 outputs
+            'wc3': tf.Variable(tf.random_normal([5, 5, 64, 64], stddev=sd)),
+            # fully connected, (320/8)*(320/8)*64 inputs, 1024 outputs
+            'wd1': tf.Variable(tf.random_normal([40*40*64, 1024], stddev=sd)),
+            # 1024 inputs, 200 outputs
+            'w_out': tf.Variable(tf.random_normal([1024, n_outputs], stddev=sd))
+        }
 
-    # Prediction tensor.
-    pred = conv_net(x, weights, biases, keep_prob)
+        biases = {
+            'bc1': tf.Variable(tf.zeros([32])),
+            'bc2': tf.Variable(tf.zeros([64])),
+            'bc3': tf.Variable(tf.zeros([64])),
+            'bd1': tf.Variable(tf.zeros([1024])),
+            'b_out': tf.Variable(tf.zeros([n_outputs]))
+        }
 
-    # Initialize global variables.
-    init = tf.global_variables_initializer()
+        # Prediction tensor.
+        self.pred = conv_net(self.x, weights, biases, self.keep_prob)
 
-    # Dictionary of mapping from names to tensors (makes saving and restoring models easier).
-    combined = {}
-    combined.update(weights)
-    combined.update(biases)
+        # Initialize global variables.
+        init = tf.global_variables_initializer()
 
-    # For saving models.
-    saver = tf.train.Saver(combined, max_to_keep=None)
+        # Dictionary of mapping from names to tensors (makes saving and restoring models easier).
+        combined = {}
+        combined.update(weights)
+        combined.update(biases)
 
-    with tf.Session() as sess:
-        sess.run(init)
+        # For saving models.
+        saver = tf.train.Saver(combined, max_to_keep=None)
 
-        # Restore model.
-        saver.restore(sess, "./saved_models/whole_image/noise_0_training_1000.ckpt")
+        # Restore the model.
+        self.sess.run(init)
+        saver.restore(self.sess, checkpoint_file)
 
+    # Returns the vector of drainage rate predictions after running the image from the specified path
+    # through the trained CNN over the entire image.
+    def predictions(self, img):
         # Read in image.
         img = np.array(scipy.misc.imread(img, mode='RGB'))
 
         # Run inference.
-        predictions = sess.run(pred, feed_dict={x: img.reshape((1, 320, 320, 3)), keep_prob: 1.})
+        predictions = self.sess.run(self.pred, feed_dict={self.x: img.reshape((1, 320, 320, 3)), self.keep_prob: 1.})
 
         return predictions.reshape(200)

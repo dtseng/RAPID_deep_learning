@@ -6,9 +6,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import matplotlib.gridspec as gridspec
+import os
+import tensorflow as tf
 
 from PIL import Image
 from matplotlib.animation import FuncAnimation
+
+# Used for specifying which GPU to train on.
+os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+os.environ["CUDA_VISIBLE_DEVICES"] = "3"
 
 # Initialize example vineyard.
 vy = simulation.Vineyard()
@@ -29,10 +35,13 @@ im = Image.open(IMG_FILENAME.format(10))
 im_resized = im.resize(size, Image.ANTIALIAS)
 im_resized.save(IMG_FILENAME.format(10), "PNG")
 
+# Intialize predictor.
+predictor = predictions.Predictor("./saved_models/whole_image/noise_0_training_1000.ckpt", tf.Session())
+
 # Apply feedback controller for 20 more timesteps.
 for j in range(11, 31):
     # Update irrigation rate using feedback.
-    vy.irrigation_rate += predictions.predictions(IMG_FILENAME.format(j - 1)) - 0.25
+    vy.irrigation_rate += predictor.predictions(IMG_FILENAME.format(j - 1)) - 0.25
 
     # Run simulation for one timestep.
     vy.update(0)
