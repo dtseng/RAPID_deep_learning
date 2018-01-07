@@ -25,11 +25,11 @@ def flood_irrigation():
 
 # Computes amount of water used from timesteps 10-20 using the precision feedback controller.
 def precision_irrigation():
-	total_irrigation_used = 0.0
+    total_irrigation_used = 0.0
 
-	# Run experiment over all test set vineyards.
-	for i in range(200):
-        vy = Vineyard()
+    # Run experiment over all test set vineyards.
+    for i in range(200):
+        vy = simulation.Vineyard()
         vy.drainage_rate = np.load("datasets/noise_0/test_data/regular/drainage_rate{0}.npy".format(i))
 
         # Update for 10 timesteps.
@@ -38,7 +38,7 @@ def precision_irrigation():
 
         # Apply feedback controller for 10 timesteps.
         for _ in range(10):
-        	# Save image.
+            # Save image.
             extent = vy.ax1.get_window_extent().transformed(vy.fig.dpi_scale_trans.inverted())
             vy.fig.savefig("test.png", bbox_inches=extent)
             size = 320, 320
@@ -58,12 +58,12 @@ def precision_irrigation():
             # Run simulation for one timestep.
             vy.update(0)
 
-	print("TOTAL IRRIGATION PER PLANT PER TIMESTEP:", total_irrigation_used / 200.0 / 10.0)
+    print("TOTAL IRRIGATION PER PLANT PER TIMESTEP:", total_irrigation_used / 200.0 / 10.0)
 
 
 def main():
-	flood_irrigation()
-	precision_irrigation()
+    flood_irrigation()
+    precision_irrigation()
 
 if __name__ == '__main__':
-	main()
+    main()
