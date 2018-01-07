@@ -24,7 +24,7 @@ def flood_irrigation(predictor):
     # Run experiment over all test set vineyards.
     for i in range(200):
         # Apply irrigation equal to the maximum predicted drainage rate over all 10 timesteps.
-        total_irrigation_used += 10.0 * 200.0 * np.max(predictor.predictions("./datasets/noise_0/test_data/regular/image{0}.png".format(i)))
+        total_irrigation_used += 10.0 * 200.0 * np.max(predictor.predictions("/home/wsong/datasets/noise_0/test_data/regular/image{0}.png".format(i)))
 
     print("TOTAL IRRIGATION PER PLANT PER TIMESTEP:", total_irrigation_used / 200.0 / 200.0 / 10.0)
 
@@ -39,7 +39,7 @@ def precision_irrigation(predictor):
             print("Running Precision Irrigation Experiment on Vineyard {0}.".format(i))
 
         vy = simulation.Vineyard()
-        vy.drainage_rate = np.load("datasets/noise_0/test_data/regular/drainage_rate{0}.npy".format(i))
+        vy.drainage_rate = np.load("/home/wsong/datasets/noise_0/test_data/regular/drainage_rate{0}.npy".format(i))
 
         # Update for 10 timesteps.
         for _ in range(10):
@@ -71,7 +71,8 @@ def precision_irrigation(predictor):
 
 
 def main():
-    predictor = predictions.Predictor("./saved_models/whole_image/noise_0_training_1000.ckpt", tf.Session())
+    SAVED_MODEL_LOCATION = "/home/wsong/saved_models/whole_image/noise_0_training_1000.ckpt"
+    predictor = predictions.Predictor(SAVED_MODEL_LOCATION, tf.Session())
     flood_irrigation(predictor)
     precision_irrigation(predictor)
 

@@ -18,7 +18,7 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "3"
 
 # Initialize example vineyard.
 vy = simulation.Vineyard()
-vy.drainage_rate = np.load("./datasets/noise_0/test_data/regular/drainage_rate0.npy".format(i))
+vy.drainage_rate = np.load("/home/wsong/datasets/noise_0/test_data/regular/drainage_rate0.npy".format(i))
 
 # Update vineyard for 10 timesteps.
 for i in range(10):
@@ -36,7 +36,7 @@ im_resized = im.resize(size, Image.ANTIALIAS)
 im_resized.save(IMG_FILENAME.format(10), "PNG")
 
 # Intialize predictor.
-predictor = predictions.Predictor("./saved_models/whole_image/noise_0_training_1000.ckpt", tf.Session())
+predictor = predictions.Predictor("/home/wsong/saved_models/whole_image/noise_0_training_1000.ckpt", tf.Session())
 
 # Apply feedback controller for 20 more timesteps.
 for j in range(11, 31):
