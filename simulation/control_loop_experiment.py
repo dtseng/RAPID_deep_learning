@@ -59,7 +59,7 @@ def precision_irrigation(predictor):
             vy.irrigation_rate += predictor.predictions("test.png") - 0.25
 
             # Prevent irrigation rate from becoming negative.
-            vy.irrgation_rate = vy.irrigation_rate.clip(min=0.0)
+            vy.irrigation_rate = vy.irrigation_rate.clip(min=0.0)
 
             # Log total amount of irrigation used.
             total_irrigation_used += np.sum(vy.irrigation_rate)

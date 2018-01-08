@@ -87,7 +87,7 @@ class Plant(object):
         # When growing, leaf positions are sampled as a multivariate Gaussian
         # distribution with mean equal to the position of the plant and
         # covariance matrix proportional to this growth ratio.
-        self.growth_ratio = np.array([[0.3, 0], [0, 1.2]])
+        self.growth_ratio = np.array([[0.1, 0], [0, 0.4]])
         
         # Sample the initial leaf positions of the plants.
         self.leaf_positions = np.random.multivariate_normal(self.position, 
