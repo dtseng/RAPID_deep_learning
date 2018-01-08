@@ -75,7 +75,7 @@ def main():
     SAVED_MODEL_LOCATION = "/home/davidtseng/irrigation/saved_models/whole_image/noise_0_training_1000.ckpt"
     predictor = predictions.Predictor(SAVED_MODEL_LOCATION, tf.Session())
     flood_irrigation(predictor)
-    precision_irrigation(predictor)
+    # precision_irrigation(predictor)
 
 if __name__ == '__main__':
     main()
