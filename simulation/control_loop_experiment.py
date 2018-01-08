@@ -14,7 +14,7 @@ from matplotlib.animation import FuncAnimation
 
 # Used for specifying which GPU to train on.
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-os.environ["CUDA_VISIBLE_DEVICES"] = "3"
+# os.environ["CUDA_VISIBLE_DEVICES"] = "3"
 
 # Computes amount of water used from timesteps 10-20 if we simply use the maximum predicted drainage rate as a reference,
 # and apply the same amount of irrigation to all plants.
@@ -37,9 +37,9 @@ def precision_irrigation(predictor):
     for i in range(200):
         if i % 5 == 0:
             print("Running Precision Irrigation Experiment on Vineyard {0}.".format(i))
-        # "/home/wsong/datasets/noise_0/test_data/regular/drainage_rate{0}.npy"
+        DRAIN_RATE_LOC = "/home/wsong/datasets/noise_0/test_data/regular/drainage_rate{0}.npy"
         vy = simulation.Vineyard()
-        vy.drainage_rate = np.load("/home/davidtseng/irrigation/datasets/noise_0/test_data/regular/drainage_rate{0}.npy".format(i))
+        vy.drainage_rate = np.load(DRAIN_RATE_LOC.format(i))
 
         # Update for 10 timesteps.
         for _ in range(10):
@@ -71,8 +71,7 @@ def precision_irrigation(predictor):
 
 
 def main():
-    # SAVED_MODEL_LOCATION = "/home/wsong/saved_models/whole_image/noise_0_training_1000.ckpt"
-    SAVED_MODEL_LOCATION = "/home/davidtseng/irrigation/saved_models/whole_image/noise_0_training_1000.ckpt"
+    SAVED_MODEL_LOCATION = "/home/wsong/saved_models/whole_image/noise_0_training_1000.ckpt"
     predictor = predictions.Predictor(SAVED_MODEL_LOCATION, tf.Session())
     flood_irrigation(predictor)
     precision_irrigation(predictor)

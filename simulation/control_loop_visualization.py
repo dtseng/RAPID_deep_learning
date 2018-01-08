@@ -14,7 +14,7 @@ from matplotlib.animation import FuncAnimation
 
 # Used for specifying which GPU to train on.
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-os.environ["CUDA_VISIBLE_DEVICES"] = "3"
+# os.environ["CUDA_VISIBLE_DEVICES"] = "3"
 
 # Initialize example vineyard.
 vy = simulation.Vineyard()
