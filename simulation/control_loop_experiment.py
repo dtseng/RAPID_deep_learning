@@ -26,7 +26,7 @@ def flood_irrigation(predictor):
         # Apply irrigation equal to the maximum predicted drainage rate over all 10 timesteps.
         total_irrigation_used += 10.0 * 200.0 * np.max(predictor.predictions("/home/wsong/datasets/noise_0/test_data/regular/image{0}.png".format(i)))
 
-    print("TOTAL IRRIGATION PER PLANT PER TIMESTEP:", total_irrigation_used / 200.0 / 200.0 / 10.0)
+    print("TOTAL IRRIGATION PER PLANT PER TIMESTEP FLOOD:", total_irrigation_used / 200.0 / 200.0 / 10.0)
 
 
 # Computes amount of water used from timesteps 10-20 using the precision feedback controller.
@@ -67,7 +67,7 @@ def precision_irrigation(predictor):
             # Run simulation for one timestep.
             vy.update(0)
 
-    print("TOTAL IRRIGATION PER PLANT PER TIMESTEP:", total_irrigation_used / 200.0 / 200.0 / 10.0)
+    print("TOTAL IRRIGATION PER PLANT PER TIMESTEP PRECISION:", total_irrigation_used / 200.0 / 200.0 / 10.0)
 
 
 def main():
@@ -75,7 +75,7 @@ def main():
     SAVED_MODEL_LOCATION = "/home/davidtseng/irrigation/saved_models/whole_image/noise_0_training_1000.ckpt"
     predictor = predictions.Predictor(SAVED_MODEL_LOCATION, tf.Session())
     flood_irrigation(predictor)
-    # precision_irrigation(predictor)
+    precision_irrigation(predictor)
 
 if __name__ == '__main__':
     main()
