@@ -43,6 +43,9 @@ for j in range(11, 31):
     # Update irrigation rate using feedback.
     vy.irrigation_rate += predictor.predictions(IMG_FILENAME.format(j - 1)) - 0.25
 
+    # Prevent irrigation rate from becoming negative.
+    vy.irrgation_rate = vy.irrigation_rate.clip(min=0.0)
+
     # Run simulation for one timestep.
     vy.update(0)
 
