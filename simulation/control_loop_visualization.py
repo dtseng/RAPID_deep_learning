@@ -18,7 +18,7 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "3"
 
 # Initialize example vineyard.
 vy = simulation.Vineyard()
-vy.drainage_rate = np.load("/home/wsong/datasets/noise_0/test_data/regular/drainage_rate0.npy".format(i))
+vy.drainage_rate = np.load("/home/wsong/datasets/noise_0/test_data/regular/drainage_rate0.npy")
 
 # Update vineyard for 10 timesteps.
 for i in range(10):
