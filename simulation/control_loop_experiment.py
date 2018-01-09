@@ -24,7 +24,7 @@ def flood_irrigation(predictor):
     # Run experiment over all test set vineyards.
     for i in range(200):
         # Apply irrigation equal to the maximum predicted drainage rate over all 10 timesteps.
-        total_irrigation_used += 10.0 * 200.0 * np.max(predictor.predictions("/home/wsong/datasets/noise_0/test_data/regular/image{0}.png".format(i)))
+        total_irrigation_used += 10.0 * 200.0 * (np.max(predictor.predictions("/home/wsong/datasets/noise_0/test_data/regular/image{0}.png".format(i))) + .25)
 
     print("TOTAL IRRIGATION PER PLANT PER TIMESTEP FLOOD:", total_irrigation_used / 200.0 / 200.0 / 10.0)
 
@@ -35,8 +35,8 @@ def precision_irrigation(predictor):
 
     # Run experiment over all test set vineyards.
     for i in range(200):
-        if i % 5 == 0:
-            print("Running Precision Irrigation Experiment on Vineyard {0}.".format(i))
+        
+        print("Running Precision Irrigation Experiment on Vineyard {0}.".format(i))
         DRAIN_RATE_LOC = "/home/wsong/datasets/noise_0/test_data/regular/drainage_rate{0}.npy"
         vy = simulation.Vineyard()
         vy.drainage_rate = np.load(DRAIN_RATE_LOC.format(i))
@@ -66,6 +66,13 @@ def precision_irrigation(predictor):
 
             # Run simulation for one timestep.
             vy.update(0)
+
+        # Close figures.
+        plt.clf()
+        plt.cla()
+        plt.close()
+
+        print("AVERAGE IRRIGATION PER PLANT PER TIMESTEP:", total_irrigation_used / (i + 1) / 200.0 / 10.0)
 
     print("TOTAL IRRIGATION PER PLANT PER TIMESTEP PRECISION:", total_irrigation_used / 200.0 / 200.0 / 10.0)
 
