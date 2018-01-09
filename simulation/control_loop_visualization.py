@@ -30,8 +30,10 @@ for i in range(10):
     vy.update(0)
 
 # File pattern for save images.
-IMG_FILENAME = "test_drain_rate{0}_std_{1}/".format(RATE, STD_DEV)
-IMG_FILENAME += "test_img{0}.png"
+DIRECTORY = "test_drain_rate{0}_std_{1}/".format(RATE, STD_DEV)
+if not os.path.exists(DIRECTORY):
+    os.makedirs(DIRECTORY)
+IMG_FILENAME = DIRECTORY + "test_img{0}.png"
 
 # Save current image of vineyard.
 extent = vy.ax1.get_window_extent().transformed(vy.fig.dpi_scale_trans.inverted())
