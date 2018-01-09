@@ -67,3 +67,6 @@ for j in range(11, 31):
     im_resized.save(IMG_FILENAME.format(j), "PNG")
 
 print("Visualization Complete")
+print("Drain Rate:", RATE, "Standard Dev:", STD_DEV)
+print("File location:", IMG_FILENAME)
+
