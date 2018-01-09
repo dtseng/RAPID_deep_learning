@@ -16,16 +16,22 @@ from matplotlib.animation import FuncAnimation
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 # os.environ["CUDA_VISIBLE_DEVICES"] = "3"
 
+# control loop noise
+STD_DEV = 1
+# drainage rate
+RATE = 5
+
 # Initialize example vineyard.
 vy = simulation.Vineyard()
-vy.drainage_rate = np.load("/home/wsong/datasets/noise_0/test_data/regular/drainage_rate5.npy")
+vy.drainage_rate = np.load("/home/wsong/datasets/noise_0/test_data/regular/drainage_rate{0}.npy".format(RATE))
 
 # Update vineyard for 10 timesteps.
 for i in range(10):
     vy.update(0)
 
 # File pattern for save images.
-IMG_FILENAME = "test_drain_5/test_img{0}.png"
+IMG_FILENAME = "test_drain_rate{0}_std_{1}/".format(RATE, STD_DEV)
+IMG_FILENAME += "test_img{0}.png"
 
 # Save current image of vineyard.
 extent = vy.ax1.get_window_extent().transformed(vy.fig.dpi_scale_trans.inverted())
@@ -43,6 +49,9 @@ for j in range(11, 31):
     # Update irrigation rate using feedback.
     vy.irrigation_rate += predictor.predictions(IMG_FILENAME.format(j - 1)) - 0.25
 
+    # add noise to irrigation system output
+    vy.irrigation_rate += np.random.normal(scale=STD_DEV, size=vy.irrigation_rate.shape)
+
     # Prevent irrigation rate from becoming negative.
     vy.irrigation_rate = vy.irrigation_rate.clip(min=0.0)
 
@@ -56,3 +65,5 @@ for j in range(11, 31):
     im = Image.open(IMG_FILENAME.format(j))
     im_resized = im.resize(size, Image.ANTIALIAS)
     im_resized.save(IMG_FILENAME.format(j), "PNG")
+
+print("Visualization Complete")
