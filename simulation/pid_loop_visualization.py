@@ -30,7 +30,7 @@ for i in range(10):
     vy.update(0)
 
 # File pattern for save images.
-DIRECTORY = "test_drain_rate{0}_std_{1}/".format(RATE, STD_DEV)
+DIRECTORY = "pid_test_drain_rate{0}_std_{1}/".format(RATE, STD_DEV)
 if not os.path.exists(DIRECTORY):
     os.makedirs(DIRECTORY)
 IMG_FILENAME = DIRECTORY + "test_img{0}.png"
@@ -47,10 +47,33 @@ im_resized.save(IMG_FILENAME.format(10), "PNG")
 predictor = predictions.Predictor("/home/wsong/saved_models/whole_image/noise_0_training_1000.ckpt", tf.Session())
 
 total_irrigation_used = 0.0
+
+# set value
+SET_VALUE = .25 
+# integral term
+integral_reset = 0
+# proportion
+K = 1
+# time steps per repeat
+tau_i = 5
+tau_d = 5
+# last error
+last_error = predictor.predictions(IMG_FILENAME.format(10)) - SET_VALUE
+
 # Apply feedback controller for 20 more timesteps.
 for j in range(11, 31):
+
+    # calculate error
+    error = predictor.predictions(IMG_FILENAME.format(j - 1)) - SET_VALUE
+
+    # update integral term
+    integral_reset += error / tau_i
+
+    # derivative term
+    d_term = error - last_error
+
     # Update irrigation rate using feedback.
-    vy.irrigation_rate += predictor.predictions(IMG_FILENAME.format(j - 1)) - 0.25
+    vy.irrigation_rate += K * (error + integral_reset + d_term)
 
     # add noise to irrigation system output
     vy.irrigation_rate += np.random.normal(scale=STD_DEV, size=vy.irrigation_rate.shape)
