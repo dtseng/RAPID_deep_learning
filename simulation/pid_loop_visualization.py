@@ -53,10 +53,10 @@ SET_VALUE = .25
 # integral term
 integral_reset = 0
 # proportion
-K = 50
+K = 10
 # time steps per repeat
 tau_i = 500
-tau_d = 500
+tau_d = 5
 # last error
 last_error = predictor.predictions(IMG_FILENAME.format(10)) - SET_VALUE
 
