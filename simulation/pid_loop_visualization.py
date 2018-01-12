@@ -109,7 +109,7 @@ print("Avg Number of Leaves per plant:", num_leaves / 200.0)
 print("Irrigation per Leaf:", total_irrigation_used / num_leaves)
 
 # plot error chart for PID tuning
-title = "Drain Rate: {0}, Standard Dev: {1}, Proportion (K): {3}, tau_i: {4}, tau_d: {5}".format(RATE, STD_DEV, K, tau_i, tau_d)
+title = "Drain Rate: {0}, Standard Dev: {1}, Proportion (K): {2}, tau_i: {3}, tau_d: {4}".format(RATE, STD_DEV, K, tau_i, tau_d)
 t = np.arange(11, 31)
 error_plot = plt.figure()
 ax = error_plot.add_subplot(111)
