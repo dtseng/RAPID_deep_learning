@@ -49,7 +49,7 @@ predictor = predictions.Predictor("/home/wsong/saved_models/whole_image/noise_0_
 total_irrigation_used = 0.0
 
 # set value
-SET_VALUE = .25 
+SET_VALUE = .25
 # integral term
 integral_reset = 0
 # proportion
@@ -60,11 +60,15 @@ tau_d = 5
 # last error
 last_error = predictor.predictions(IMG_FILENAME.format(10)) - SET_VALUE
 
+avg_errors = []
 # Apply feedback controller for 20 more timesteps.
 for j in range(11, 31):
 
     # calculate error
     error = predictor.predictions(IMG_FILENAME.format(j - 1)) - SET_VALUE
+
+    # term to plot later
+    avg_errors.append(sum(error) / 200.0)
 
     # update integral term
     integral_reset += error / tau_i
@@ -103,3 +107,7 @@ print("AVERAGE IRRIGATION PER PLANT PER TIMESTEP:", total_irrigation_used / 200.
 num_leaves = sum([len(p.leaf_positions) for p in vy.vines])
 print("Avg Number of Leaves per plant:", num_leaves / 200.0)
 print("Irrigation per Leaf:", total_irrigation_used / num_leaves)
+t = np.arange(10.0, 30.0, 1)
+print(t)
+plt.scatter(t, avg_errors)
+plt.savefig(DIRECTORY + "error-plot")
