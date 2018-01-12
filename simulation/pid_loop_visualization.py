@@ -55,8 +55,8 @@ integral_reset = 0
 # proportion
 K = 10
 # time steps per repeat
-tau_i = 500
-tau_d = 5
+tau_i = 10
+tau_d = 10
 # last error
 last_error = predictor.predictions(IMG_FILENAME.format(10)) - SET_VALUE
 
@@ -103,16 +103,22 @@ for j in range(11, 31):
 print("Visualization Complete")
 print("Drain Rate:", RATE, "Standard Dev:", STD_DEV)
 print("File location:", IMG_FILENAME)
-print("AVERAGE IRRIGATION PER PLANT PER TIMESTEP:", total_irrigation_used / 200.0 / 10.0)
+avg_irrigation = total_irrigation_used / 200.0 / 20.0
 num_leaves = sum([len(p.leaf_positions) for p in vy.vines])
-print("Avg Number of Leaves per plant:", num_leaves / 200.0)
-print("Irrigation per Leaf:", total_irrigation_used / num_leaves)
+avg_leaves = num_leaves / 200.0
+avg_irr_per_leaf = total_irrigation_used / num_leaves
+print("AVERAGE IRRIGATION PER PLANT PER TIMESTEP:", avg_irrigation)
+
+print("Avg Number of Leaves per plant:", avg_leaves)
+print("Irrigation per Leaf:", avg_irr_per_leaf)
 
 # plot error chart for PID tuning
 title = "Drain Rate: {0}, Standard Dev: {1}, Proportion (K): {2}, tau_i: {3}, tau_d: {4}".format(RATE, STD_DEV, K, tau_i, tau_d)
+suptitle = "Avg leaves per plant: {0:.3f}, avg irrigation per plant per time step: {1:.3f}, irrigation per leaf: {2:.3f}".format(avg_leaves, avg_irrigation, avg_irr_per_leaf)
 t = np.arange(11, 31)
 error_plot = plt.figure()
 ax = error_plot.add_subplot(111)
 ax.scatter(t, avg_errors)
 ax.set_title(title)
+ax.suptitle(suptitle, fontsize=10, fontweight='bold')
 error_plot.savefig(DIRECTORY + "error-plot")
