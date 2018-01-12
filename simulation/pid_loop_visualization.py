@@ -19,7 +19,7 @@ os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 # control loop noise
 STD_DEV = 0
 # drainage rate
-RATE = 0
+RATE = 5
 
 # Initialize example vineyard.
 vy = simulation.Vineyard()
@@ -53,10 +53,10 @@ SET_VALUE = .25
 # integral term
 integral_reset = 0
 # proportion
-K = 1
+K = 10
 # time steps per repeat
-tau_i = 5
-tau_d = 5
+tau_i = 500
+tau_d = 500
 # last error
 last_error = predictor.predictions(IMG_FILENAME.format(10)) - SET_VALUE
 
@@ -107,10 +107,12 @@ print("AVERAGE IRRIGATION PER PLANT PER TIMESTEP:", total_irrigation_used / 200.
 num_leaves = sum([len(p.leaf_positions) for p in vy.vines])
 print("Avg Number of Leaves per plant:", num_leaves / 200.0)
 print("Irrigation per Leaf:", total_irrigation_used / num_leaves)
+
+# plot error chart for PID tuning
+title = "Drain Rate: {0}, Standard Dev: {1}, Proportion (K): {3}, tau_i: {4}, tau_d: {5}"
 t = np.arange(11, 31)
-print("t", len(t))
-print("avg_errors", len(avg_errors))
 error_plot = plt.figure()
 ax = error_plot.add_subplot(111)
 ax.scatter(t, avg_errors)
+ax.set_title(title)
 error_plot.savefig(DIRECTORY + "error-plot")
