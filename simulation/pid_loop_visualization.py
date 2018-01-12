@@ -53,7 +53,7 @@ SET_VALUE = .25
 # integral term
 integral_reset = 0
 # proportion
-K = 10
+K = 50
 # time steps per repeat
 tau_i = 500
 tau_d = 500
@@ -109,7 +109,7 @@ print("Avg Number of Leaves per plant:", num_leaves / 200.0)
 print("Irrigation per Leaf:", total_irrigation_used / num_leaves)
 
 # plot error chart for PID tuning
-title = "Drain Rate: {0}, Standard Dev: {1}, Proportion (K): {3}, tau_i: {4}, tau_d: {5}"
+title = "Drain Rate: {0}, Standard Dev: {1}, Proportion (K): {3}, tau_i: {4}, tau_d: {5}".format(RATE, STD_DEV, K, tau_i, tau_d)
 t = np.arange(11, 31)
 error_plot = plt.figure()
 ax = error_plot.add_subplot(111)
