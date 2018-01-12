@@ -19,7 +19,7 @@ os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 # control loop noise
 STD_DEV = 0
 # drainage rate
-RATE = 5
+RATE = 0
 
 # Initialize example vineyard.
 vy = simulation.Vineyard()
