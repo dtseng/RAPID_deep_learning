@@ -107,7 +107,7 @@ print("AVERAGE IRRIGATION PER PLANT PER TIMESTEP:", total_irrigation_used / 200.
 num_leaves = sum([len(p.leaf_positions) for p in vy.vines])
 print("Avg Number of Leaves per plant:", num_leaves / 200.0)
 print("Irrigation per Leaf:", total_irrigation_used / num_leaves)
-t = np.arange(10, 31)
+t = np.arange(11, 31)
 print("t", len(t))
 print("avg_errors", len(avg_errors))
 error_plot = plt.figure()
