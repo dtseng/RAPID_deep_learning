@@ -155,7 +155,7 @@ def one_prediction_irrigation():
     im_resized = im.resize(size, Image.ANTIALIAS)
     im_resized.save(IMG_FILENAME.format(10), "PNG")
 
-    SET_VALUE = .25
+    SET_VALUE = 1
 
     # Intialize predictor.
     predictor = predictions.Predictor("/home/wsong/saved_models/whole_image/noise_0_training_1000.ckpt", tf.Session())
