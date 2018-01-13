@@ -45,17 +45,16 @@ im_resized.save(IMG_FILENAME.format(10), "PNG")
 
 # Intialize predictor.
 predictor = predictions.Predictor("/home/wsong/saved_models/whole_image/noise_0_training_1000.ckpt", tf.Session())
+vy.irrigation_rate = predictor.predictions(IMG_FILENAME.format(10))
 
 total_irrigation_used = 0.0
 avg_errors = []
-# Apply feedback controller for 20 more timesteps.
+# Apply constant irrigation for 20 more timesteps.
 for j in range(11, 31):
 
     error = predictor.predictions(IMG_FILENAME.format(j - 1)) - 0.25
-    # Update irrigation rate using feedback.
-    vy.irrigation_rate += error
 
-    # term to plot later
+    # errors to plot later
     avg_errors.append(sum(error) / 200.0)
 
     # add noise to irrigation system output
