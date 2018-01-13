@@ -90,7 +90,7 @@ print("AVERAGE IRRIGATION PER PLANT PER TIMESTEP:", avg_irrigation)
 print("Avg Number of Leaves per plant:", avg_leaves)
 print("Irrigation per Leaf:", avg_irr_per_leaf)
 
-title = "Avg leaves per plant: {0:.3f}, avg irrigation per plant per time step: {1:.3f}, irrigation per leaf: {2:.3f}".format(avg_leaves, avg_irrigation, avg_irr_per_leaf)
+title = "Avg leaves/plant: {0:.3f}, avg irrigation/plant/time step: {1:.3f}, irrigation/leaf: {2:.3f}".format(avg_leaves, avg_irrigation, avg_irr_per_leaf)
 t = np.arange(11, 31)
 error_plot = plt.figure()
 ax = error_plot.add_subplot(111)
