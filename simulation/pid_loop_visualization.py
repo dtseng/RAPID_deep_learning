@@ -131,7 +131,7 @@ def one_prediction_irrigation():
     # control loop noise
     STD_DEV = 0
     # drainage rate
-    RATE = 5
+    RATE = 0
     # File pattern for save images.
     DIRECTORY = "constant_test_drain_rate{0}_std_{1}/".format(RATE, STD_DEV)
     if not os.path.exists(DIRECTORY):
@@ -155,7 +155,7 @@ def one_prediction_irrigation():
     im_resized = im.resize(size, Image.ANTIALIAS)
     im_resized.save(IMG_FILENAME.format(10), "PNG")
 
-    SET_VALUE = 1
+    SET_VALUE = .25
 
     # Intialize predictor.
     predictor = predictions.Predictor("/home/wsong/saved_models/whole_image/noise_0_training_1000.ckpt", tf.Session())
