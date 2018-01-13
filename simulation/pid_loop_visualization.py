@@ -24,7 +24,7 @@ def pid_irrigation():
     # drainage rate
     RATE = 5
     # File pattern for save images.
-    DIRECTORY = "pid_test_drain_rate{0}_std_{1}/".format(RATE, STD_DEV)
+    DIRECTORY = "constant_test_drain_rate{0}_std_{1}/".format(RATE, STD_DEV)
     if not os.path.exists(DIRECTORY):
         os.makedirs(DIRECTORY)
     IMG_FILENAME = DIRECTORY + "test_img{0}.png"
