@@ -10,62 +10,62 @@ import time
 
 # Utility function for shuffling training eamples and labels.
 def shuffle(X, Y):
-	indices = np.arange(X.shape[0])
-	random.shuffle(indices)
-	X = X[indices]
-	Y = Y[indices]
-	return X, Y
+    indices = np.arange(X.shape[0])
+    random.shuffle(indices)
+    X = X[indices]
+    Y = Y[indices]
+    return X, Y
 
 # Class for reading in training examples.
 class Data:
-	def __init__(self, noise, size, imageFiles='./datasets/noise_0/train_data/reshaped/*.png', 
+    def __init__(self, noise, size, imageFiles='./datasets/noise_0/train_data/reshaped/*.png', 
                  labelFiles='./datasets/noise_0/train_data/reshaped/*.npy'):
         # Read in images.
-		image_list = glob.glob(imageFiles)
-		image_list.sort()
-		x = []
-		for fname in image_list:
-			for img in process_image(fname):
-				x.append(img)
-		x = np.array(x)
+        image_list = glob.glob(imageFiles)
+        image_list.sort()
+        x = []
+        for fname in image_list:
+            for img in process_image(fname):
+                x.append(img)
+        x = np.array(x)
 
         # Read in labels.
-		label_list = glob.glob(labelFiles)
-		label_list.sort()
-		y = np.array([])
-		for l in label_list:
-			y = np.concatenate((y, np.load(l)))
-		y = np.reshape(y, (y.shape[0], 1))
+        label_list = glob.glob(labelFiles)
+        label_list.sort()
+        y = np.array([])
+        for l in label_list:
+            y = np.concatenate((y, np.load(l)))
+        y = np.reshape(y, (y.shape[0], 1))
 
         # Shuffle training examples.
         self.x, self.y = x, y
         self.x, self.y = shuffle(self.x, self.y)
 
         # Inject image noise if specified.
-		if noise:
-			self.x = np.clip(self.x + np.random.normal(0, noise*255, self.x.shape), 0, 255)
+        if noise:
+            self.x = np.clip(self.x + np.random.normal(0, noise*255, self.x.shape), 0, 255)
 
         # Truncate based on number of specified examples.
-		self.x = self.x[:200*size]
-		self.y = self.y[:200*size]
-			
+        self.x = self.x[:200*size]
+        self.y = self.y[:200*size]
+            
 # Process an individual image and split it into images of inividual plants.
 def process_image(fname):
-	img = scipy.misc.imread(fname, mode='RGB')
-	cropped = img[30:430, 10:410, :]
+    img = scipy.misc.imread(fname, mode='RGB')
+    cropped = img[30:430, 10:410, :]
 
-	img_height = 20
-	img_width = 40
-	
-	images = []
+    img_height = 20
+    img_width = 40
+    
+    images = []
 
     # Iterate through the image according to the order of the labels.
-	for y in range(20, 0, -1):
-		for x in range(10):
-			images.append(cropped[(y - 1) * img_height: y * img_height, x * img_width:(x + 1) * img_width, :].flatten())
+    for y in range(20, 0, -1):
+        for x in range(10):
+            images.append(cropped[(y - 1) * img_height: y * img_height, x * img_width:(x + 1) * img_width, :].flatten())
 
-	images = np.array(images)
-	return images
+    images = np.array(images)
+    return images
 
 # Training function for a single random forest model.
 def train_diff_levels(img_noise, size, depth, sim_noise):
