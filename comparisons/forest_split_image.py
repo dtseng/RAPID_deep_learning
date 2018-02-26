@@ -86,7 +86,7 @@ def test_model(model_img_noise, model_training_size, depth, model_sim_noise, ima
     print("=========================================================")
 
     # Load trained model.
-    rf = pickle.load(open("saved_models/forest/split_image/imgnoise_{0}_training_{1}_depth_{2}_simnoise_{3}.ckpt".format(model_img_noise, model_training_size, depth, model_sim_noise), 'rb'))
+    rf = pickle.load(open("saved_models/forest/split_image/imgnoise_{0}_training_{1}_depth_{2}.ckpt".format(model_img_noise, model_training_size, depth, model_sim_noise), 'rb'))
     print("Model restored.")
 
     # Load test data.
