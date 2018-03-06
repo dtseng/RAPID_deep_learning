@@ -45,7 +45,8 @@ im_resized.save(IMG_FILENAME.format(10), "PNG")
 
 # Intialize predictor.
 predictor = predictions.Predictor("/home/wsong/saved_models/whole_image/noise_0_training_1000.ckpt", tf.Session())
-vy.irrigation_rate = predictor.predictions(IMG_FILENAME.format(10))
+# vy.irrigation_rate = predictor.predictions(IMG_FILENAME.format(10))
+saved_rates = predictor.predictions(IMG_FILENAME.format(10))
 
 total_irrigation_used = 0.0
 avg_errors = []
@@ -58,7 +59,7 @@ for j in range(11, 31):
     avg_errors.append(sum(error) / 200.0)
 
     # add noise to irrigation system output
-    vy.irrigation_rate += np.random.normal(scale=STD_DEV, size=vy.irrigation_rate.shape)
+    vy.irrigation_rate = saved_rates + np.random.normal(scale=STD_DEV, size=vy.irrigation_rate.shape)
 
     # Prevent irrigation rate from becoming negative.
     vy.irrigation_rate = vy.irrigation_rate.clip(min=0.0)
