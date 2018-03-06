@@ -29,11 +29,10 @@ vy.drainage_rate = np.load("/home/wsong/datasets/noise_0/test_data/regular/drain
 DIRECTORY = "test_drain_rate{0}_std_{1}/".format(RATE, STD_DEV)
 if not os.path.exists(DIRECTORY):
     os.makedirs(DIRECTORY)
-IMG_FILENAME = DIRECTORY + "test_img{0}.png"
 
 # Save image of disspation rates
 extent = vy.ax2.get_window_extent().transformed(vy.fig.dpi_scale_trans.inverted())
-FILE_NAME = DIRECTORY + "disspation_map"
+FILE_NAME = DIRECTORY + "disspation_map.png"
 vy.fig.savefig(FILE_NAME, bbox_inches=extent)
 size = 320, 320
 im = Image.open(FILE_NAME)
@@ -45,6 +44,7 @@ for i in range(10):
     vy.update(0)
 
 # Save current image of vineyard.
+IMG_FILENAME = DIRECTORY + "test_img{0}.png"
 extent = vy.ax1.get_window_extent().transformed(vy.fig.dpi_scale_trans.inverted())
 vy.fig.savefig(IMG_FILENAME.format(10), bbox_inches=extent)
 size = 320, 320
