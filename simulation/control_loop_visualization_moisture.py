@@ -25,6 +25,12 @@ RATE = 5
 vy = simulation.Vineyard()
 vy.drainage_rate = np.load("/home/wsong/datasets/noise_0/test_data/regular/drainage_rate{0}.npy".format(RATE))
 
+# File pattern for save images.
+DIRECTORY = "test_drain_rate{0}_std_{1}/".format(RATE, STD_DEV)
+if not os.path.exists(DIRECTORY):
+    os.makedirs(DIRECTORY)
+IMG_FILENAME = DIRECTORY + "test_img{0}.png"
+
 # Save image of disspation rates
 extent = vy.ax2.get_window_extent().transformed(vy.fig.dpi_scale_trans.inverted())
 FILE_NAME = DIRECTORY + "disspation_map"
@@ -37,12 +43,6 @@ im_resized.save(FILE_NAME, "PNG")
 # Update vineyard for 10 timesteps.
 for i in range(10):
     vy.update(0)
-
-# File pattern for save images.
-DIRECTORY = "test_drain_rate{0}_std_{1}/".format(RATE, STD_DEV)
-if not os.path.exists(DIRECTORY):
-    os.makedirs(DIRECTORY)
-IMG_FILENAME = DIRECTORY + "test_img{0}.png"
 
 # Save current image of vineyard.
 extent = vy.ax1.get_window_extent().transformed(vy.fig.dpi_scale_trans.inverted())
