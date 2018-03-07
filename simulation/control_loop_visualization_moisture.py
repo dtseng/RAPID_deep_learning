@@ -2,6 +2,7 @@
 
 import simulation
 import predictions
+import matplotlib as mpl
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
@@ -23,16 +24,26 @@ RATE = 0
 
 #unshaped 200 item array to be plottec
 def save_heat_map(x, title):
-    x = np.reshape((20,10))
+    x = np.reshape(x, (20,10))
+    # print(title)
+    # print(x)
     cmap2 = mpl.colors.LinearSegmentedColormap.from_list('my_colormap',
                                            ['red','white','blue'],
                                            256)
-    cmap3 = plt.get_cmap('RdBu_r')
-    img2 = plt.imshow(np.flipud(zvals),interpolation='nearest',
+    img2 = plt.imshow(np.flipud(x),interpolation='nearest',
                     cmap = cmap2,
                     origin='lower',
                     extent=(0, 100, 0, 100))
     plt.savefig(title, bbox_inches='tight')
+
+
+def save_actual_moisture_map(vy, title):
+    x = []
+    for plant in vy.vines:
+        x.append(plant.soil_moisture)
+    save_heat_map(x, title)
+
+
 # Initialize example vineyard.
 vy = simulation.Vineyard()
 vy.drainage_rate = np.load("/home/wsong/datasets/noise_0/test_data/regular/drainage_rate{0}.npy".format(RATE))
@@ -77,10 +88,12 @@ MOISTURE_SET_POINT = 1
 curr_moisture = 1 + (vy.irrigation_rate - saved_rates)*10
 
 #save initial moisture estimate/actual
-print("initial moisture", curr_moisture)
+print("initial est moisture", curr_moisture)
+print("moisture shape", curr_moisture.shape)
 MOISTURE_EST_NAME = DIRECTORY + "moisture_est_img{0}.png"
-save_heat_map(curr_moisture, MOISTURE_EST_NAME)
-
+save_heat_map(curr_moisture, MOISTURE_EST_NAME.format(10))
+MOISTURE_ACTUAL_NAME = DIRECTORY + "moisture_actual_img{0}.png"
+save_actual_moisture_map(vy, MOISTURE_ACTUAL_NAME)
 
 # Apply constant irrigation for 20 more timesteps.
 for j in range(11, 31):
