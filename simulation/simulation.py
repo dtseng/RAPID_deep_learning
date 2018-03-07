@@ -176,7 +176,7 @@ class Vineyard(object):
         dr = self.dissipation_rate.reshape(20,10)
         sc = self.ax2.imshow(np.flipud(dr), cmap=plt.get_cmap('RdBu_r'), 
                              extent=(0, self.bounds[0][1], 0, self.bounds[1][1]),
-                             interpolation='gaussian')
+                             interpolation='nearest')
         
         # Legend.
         df=self.fig.colorbar(sc,fraction=0.046, pad=0.04)

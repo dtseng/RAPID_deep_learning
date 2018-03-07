@@ -19,14 +19,26 @@ os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 # control loop noise
 STD_DEV = 0
 # drainage rate
-RATE = 5
+RATE = 0
 
+#unshaped 200 item array to be plottec
+def save_heat_map(x, title):
+    x = np.reshape((20,10))
+    cmap2 = mpl.colors.LinearSegmentedColormap.from_list('my_colormap',
+                                           ['red','white','blue'],
+                                           256)
+    cmap3 = plt.get_cmap('RdBu_r')
+    img2 = plt.imshow(np.flipud(zvals),interpolation='nearest',
+                    cmap = cmap2,
+                    origin='lower',
+                    extent=(0, 100, 0, 100))
+    plt.savefig(title, bbox_inches='tight')
 # Initialize example vineyard.
 vy = simulation.Vineyard()
 vy.drainage_rate = np.load("/home/wsong/datasets/noise_0/test_data/regular/drainage_rate{0}.npy".format(RATE))
 
 # File pattern for save images.
-DIRECTORY = "test_drain_rate{0}_std_{1}/".format(RATE, STD_DEV)
+DIRECTORY = "test_drain_rate{0}_std_{1}_moisture/".format(RATE, STD_DEV)
 if not os.path.exists(DIRECTORY):
     os.makedirs(DIRECTORY)
 
@@ -56,27 +68,47 @@ im_resized.save(IMG_FILENAME.format(10), "PNG")
 predictor = predictions.Predictor("/home/wsong/saved_models/whole_image/noise_0_training_1000.ckpt", tf.Session())
 # vy.irrigation_rate = predictor.predictions(IMG_FILENAME.format(10))
 saved_rates = predictor.predictions(IMG_FILENAME.format(10))
-
-
+print("saved_rates:", saved_rates)
+print("saved_rates shape:", saved_rates.shape)
 
 total_irrigation_used = 0.0
 avg_errors = []
+MOISTURE_SET_POINT = 1
+curr_moisture = 1 + (vy.irrigation_rate - saved_rates)*10
+
+#save initial moisture estimate/actual
+print("initial moisture", curr_moisture)
+MOISTURE_EST_NAME = DIRECTORY + "moisture_est_img{0}.png"
+save_heat_map(curr_moisture, MOISTURE_EST_NAME)
+
+
 # Apply constant irrigation for 20 more timesteps.
 for j in range(11, 31):
 
-    error = predictor.predictions(IMG_FILENAME.format(j - 1)) - 0.25
+    rate_preds = predictor.predictions(IMG_FILENAME.format(j - 1))
+    irrigation_error = rate_preds - 0.25
+    
+    # estimated distance of moisture from set point
+    moisture_difference = MOISTURE_SET_POINT - (curr_moisture - rate_preds + vy.irrigation_rate)
 
     # errors to plot later
-    avg_errors.append(sum(error) / 200.0)
+    avg_errors.append(sum(irrigation_error) / 200.0)
+
+    # Update irrigation rate using feedback.
+    vy.irrigation_rate += moisture_difference
 
     # add noise to irrigation system output
-    vy.irrigation_rate = saved_rates + np.random.normal(scale=STD_DEV, size=vy.irrigation_rate.shape)
+    # vy.irrigation_rate = saved_rates # + np.random.normal(scale=STD_DEV, size=vy.irrigation_rate.shape) + .25
 
     # Prevent irrigation rate from becoming negative.
     vy.irrigation_rate = vy.irrigation_rate.clip(min=0.0)
 
     # Log total amount of irrigation used.
     total_irrigation_used += np.sum(vy.irrigation_rate)
+
+    # update soil moisture estimate
+    curr_moisture += vy.irrigation_rate - rate_preds
+    curr_moisture.clip(min=0.0)
 
     # Run simulation for one timestep.
     vy.update(0)
@@ -88,8 +120,6 @@ for j in range(11, 31):
     im = Image.open(IMG_FILENAME.format(j))
     im_resized = im.resize(size, Image.ANTIALIAS)
     im_resized.save(IMG_FILENAME.format(j), "PNG")
-
-
 
 print("Visualization Complete")
 print("Drain Rate:", RATE, "Standard Dev:", STD_DEV)
