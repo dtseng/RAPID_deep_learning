@@ -27,13 +27,14 @@ def save_heat_map(x, title):
     x = np.reshape(x, (20,10))
     # print(title)
     # print(x)
-    cmap2 = mpl.colors.LinearSegmentedColormap.from_list('my_colormap',
+    cmap = mpl.colors.LinearSegmentedColormap.from_list('my_colormap',
                                            ['red','white','blue'],
                                            256)
-    img2 = plt.imshow(x, interpolation='nearest',
-                    cmap = cmap2,
+    img = plt.imshow(x, interpolation='nearest',
+                    cmap = cmap,
                     origin='lower',
                     extent=(0, 100, 0, 100))
+    cb = plt.colorbar(img,cmap=cmap)
     plt.savefig(title, bbox_inches='tight')
 
 
@@ -41,6 +42,8 @@ def save_actual_moisture_map(vy, title):
     x = [p.soil_moisture for p in vy.vines]
     save_heat_map(x, title)
 
+def save_est_moisture_map(vy, title):
+    pass
 
 # Initialize example vineyard.
 vy = simulation.Vineyard()
