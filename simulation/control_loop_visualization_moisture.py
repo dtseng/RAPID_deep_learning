@@ -30,7 +30,7 @@ def save_heat_map(x, title):
     cmap2 = mpl.colors.LinearSegmentedColormap.from_list('my_colormap',
                                            ['red','white','blue'],
                                            256)
-    img2 = plt.imshow(np.flipud(x),interpolation='nearest',
+    img2 = plt.imshow(x, interpolation='nearest',
                     cmap = cmap2,
                     origin='lower',
                     extent=(0, 100, 0, 100))
@@ -93,7 +93,7 @@ print("moisture shape", curr_moisture.shape)
 MOISTURE_EST_NAME = DIRECTORY + "moisture_est_img{0}.png"
 save_heat_map(curr_moisture, MOISTURE_EST_NAME.format(10))
 MOISTURE_ACTUAL_NAME = DIRECTORY + "moisture_actual_img{0}.png"
-save_actual_moisture_map(vy, MOISTURE_ACTUAL_NAME)
+save_actual_moisture_map(vy, MOISTURE_ACTUAL_NAME.format(10))
 
 # Apply constant irrigation for 20 more timesteps.
 for j in range(11, 31):
