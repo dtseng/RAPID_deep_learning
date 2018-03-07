@@ -171,7 +171,7 @@ class Vineyard(object):
         self.vines = []
         for pos in self.vine_positions:
             self.vines.append(Plant(pos, init_soil_moisture))
-        print("vines length", len(vines))
+        print("vines length", len(self.vines))
         # Set up plotting for visualization.
         dr = self.dissipation_rate.reshape(20,10)
         sc = self.ax2.imshow(np.flipud(dr), cmap=plt.get_cmap('RdBu_r'), 
