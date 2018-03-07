@@ -94,7 +94,7 @@ MOISTURE_EST_NAME = DIRECTORY + "moisture_est_img{0}.png"
 save_heat_map(curr_moisture, MOISTURE_EST_NAME.format(10))
 MOISTURE_ACTUAL_NAME = DIRECTORY + "moisture_actual_img{0}.png"
 save_actual_moisture_map(vy, MOISTURE_ACTUAL_NAME.format(10))
-
+# RATE_EST_NAME = DIRECTORY + "moisture_actual_img{0}.png"
 # Apply constant irrigation for 20 more timesteps.
 for j in range(11, 31):
 
@@ -105,7 +105,7 @@ for j in range(11, 31):
     moisture_difference = MOISTURE_SET_POINT - (curr_moisture - rate_preds + vy.irrigation_rate)
 
     # errors to plot later
-    avg_errors.append(sum(irrigation_error) / 200.0)
+    # avg_errors.append(sum(irrigation_error) / 200.0)
 
     # Update irrigation rate using feedback.
     vy.irrigation_rate += moisture_difference
@@ -133,8 +133,8 @@ for j in range(11, 31):
     im = Image.open(IMG_FILENAME.format(j))
     im_resized = im.resize(size, Image.ANTIALIAS)
     im_resized.save(IMG_FILENAME.format(j), "PNG")
-    save_heat_map(curr_moisture, MOISTURE_EST_NAME.format(i))
-    save_actual_moisture_map(vy, MOISTURE_ACTUAL_NAME.format(i))
+    save_heat_map(curr_moisture, MOISTURE_EST_NAME.format(j))
+    save_actual_moisture_map(vy, MOISTURE_ACTUAL_NAME.format(j))
 
 
 print("Visualization Complete")
