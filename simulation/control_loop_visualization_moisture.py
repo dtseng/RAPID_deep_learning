@@ -38,9 +38,7 @@ def save_heat_map(x, title):
 
 
 def save_actual_moisture_map(vy, title):
-    x = []
-    for plant in vy.vines:
-        x.append(plant.soil_moisture)
+    x = [p.soil_moisture for p in vy.vines]
     save_heat_map(x, title)
 
 
@@ -84,12 +82,14 @@ print("saved_rates shape:", saved_rates.shape)
 
 total_irrigation_used = 0.0
 avg_errors = []
-MOISTURE_SET_POINT = 1
+MOISTURE_SET_POINT = 3
 curr_moisture = 1 + (vy.irrigation_rate - saved_rates)*10
 
 #save initial moisture estimate/actual
 print("initial est moisture", curr_moisture)
 print("moisture shape", curr_moisture.shape)
+x = [p.soil_moisture for p in vy.vines]
+print("soil moisture actual", x)
 MOISTURE_EST_NAME = DIRECTORY + "moisture_est_img{0}.png"
 save_heat_map(curr_moisture, MOISTURE_EST_NAME.format(10))
 MOISTURE_ACTUAL_NAME = DIRECTORY + "moisture_actual_img{0}.png"
@@ -133,6 +133,9 @@ for j in range(11, 31):
     im = Image.open(IMG_FILENAME.format(j))
     im_resized = im.resize(size, Image.ANTIALIAS)
     im_resized.save(IMG_FILENAME.format(j), "PNG")
+    save_heat_map(curr_moisture, MOISTURE_EST_NAME.format(i))
+    save_actual_moisture_map(vy, MOISTURE_ACTUAL_NAME.format(i))
+
 
 print("Visualization Complete")
 print("Drain Rate:", RATE, "Standard Dev:", STD_DEV)
