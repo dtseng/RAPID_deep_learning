@@ -157,13 +157,13 @@ class Vineyard(object):
 
         # Positions of the individual plants in the field.
         self.vine_positions = np.vstack((xx.flatten(),yy.flatten())).T
-
+        print("vine positions shape", self.vine_positions.shape)
         # Set local soil moisture dissipation rate for each individual plant.
         self.dissipation_rate = soil_variation(self.vine_positions.T)
         
         # Irrigation rate vector (one irrigation rate per plant).
         self.irrigation_rate = 0.5 * np.ones(self.vine_positions.shape[0])
-        
+        print("irrigation rate shape", self.irrigation_rate.shape)
         # Starting soil moisture level for each plant.
         init_soil_moisture = 1
 
@@ -171,7 +171,7 @@ class Vineyard(object):
         self.vines = []
         for pos in self.vine_positions:
             self.vines.append(Plant(pos, init_soil_moisture))
-
+        print("vines length", len(vines))
         # Set up plotting for visualization.
         dr = self.dissipation_rate.reshape(20,10)
         sc = self.ax2.imshow(np.flipud(dr), cmap=plt.get_cmap('RdBu_r'), 
