@@ -21,6 +21,7 @@ os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 STD_DEV = 0
 # drainage rate
 RATE = 0
+MOISTURE_SET_POINT = 3
 
 #unshaped 200 item array to be plottec
 def save_heat_map(x, title):
@@ -32,10 +33,11 @@ def save_heat_map(x, title):
     img = ax.imshow(x, interpolation='nearest',
                     cmap = cmap,
                     origin='lower',
-                    extent=(0, 100, 0, 100))
+                    extent=(0, 100, 0, 100),
+                    vmin=0, vmax=MOISTURE_SET_POINT*2)
     cb = fig.colorbar(img,cmap=cmap)
     plt.savefig(title, bbox_inches='tight')
-
+    plt.close(fig)
 
 def save_actual_moisture_map(vy, title):
     x = [p.soil_moisture for p in vy.vines]
@@ -84,7 +86,6 @@ print("saved_rates shape:", saved_rates.shape)
 
 total_irrigation_used = 0.0
 avg_errors = []
-MOISTURE_SET_POINT = 3
 curr_moisture = 1 + (vy.irrigation_rate - saved_rates)*10
 
 #save initial moisture estimate/actual
