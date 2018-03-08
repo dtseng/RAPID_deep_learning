@@ -25,16 +25,15 @@ RATE = 0
 #unshaped 200 item array to be plottec
 def save_heat_map(x, title):
     x = np.reshape(x, (20,10))
-    # print(title)
-    # print(x)
+    fig, ax = plt.subplots()
     cmap = mpl.colors.LinearSegmentedColormap.from_list('my_colormap',
                                            ['red','white','blue'],
                                            256)
-    img = plt.imshow(x, interpolation='nearest',
+    img = ax.imshow(x, interpolation='nearest',
                     cmap = cmap,
                     origin='lower',
                     extent=(0, 100, 0, 100))
-    cb = plt.colorbar(img,cmap=cmap)
+    cb = fig.colorbar(img,cmap=cmap)
     plt.savefig(title, bbox_inches='tight')
 
 
