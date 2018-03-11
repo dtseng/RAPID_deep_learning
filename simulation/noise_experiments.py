@@ -132,7 +132,7 @@ def precision_irrigation(predictor, noise=None):
             saved_rates = vy.irrigation_rate
 
             if noise == "adjustments":
-                vy.irrigation_rate += np.random.normal(scale=ADJUST_SCALE, size=fixed_rates.shape)
+                vy.irrigation_rate += np.random.normal(scale=ADJUST_SCALE, size=vy.irrigation_rate.shape)
             
             if noise == "spatial":
                 vy.irrigation_rate = add_spatial_noise(vy.irrigation_rate) 
