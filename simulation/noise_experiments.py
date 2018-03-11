@@ -19,8 +19,9 @@ os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 TEST_SET = "/home/wsong/datasets/noise_0/test_data/regular/drainage_rate{0}.npy"
 ADJUST_SCALES = [.1, .2, .3, .4]
 SPATIAL_RATES = [.05, .1, .20, .30]
+DELAYS = [2, 3, 4, 5]
 VINEYARD_SHAPE = (20,10)
-NUM_TRIALS = 20
+NUM_TRIALS = 2
 COORDS = {0: (1,0), 1: (0, -1), 2: (-1, 0), 3: (0,1)}
 def print_data(variances, total_irrigation_used, num_leaves):
     print("TOTAL IRRIGATION PER PLANT PER TIMESTEP: {}".format(total_irrigation_used / 200.0 / 10.0/ NUM_TRIALS))
@@ -170,6 +171,66 @@ def precision_irrigation(predictor, noise=None, adjust_scale=None, spatial_rate=
 
     print_data(variances, total_irrigation_used, num_leaves)
 
+def precision_irrigation_delays(predictor, interval_size):
+    print("Running Precision Irrigation Experiment on Vineyard")
+    total_irrigation_used = 0.0
+    variances = []
+    num_leaves = 0
+    # Run experiment over all test set vineyards.
+    for i in range(NUM_TRIALS):
+        # print("Running Precision Irrigation Experiment on Vineyard {0}.".format(i))
+
+        vy = simulation.Vineyard()
+        vy.drainage_rate = np.load(TEST_SET.format(i))
+
+        # Update for 10 timesteps.
+        for _ in range(10):
+            vy.update(0)
+
+        # Apply feedback controller for 10 timesteps.
+        update = None
+        for i in range(10):
+            # Save image.
+            # calculate update needed at beginning and at adjustment interval midpoints
+            if i == 0 or (i + delay//2) % delay == 0:
+                print("{} cacluating adjustment needed".format(i))
+                extent = vy.ax1.get_window_extent().transformed(vy.fig.dpi_scale_trans.inverted())
+                vy.fig.savefig("test.png", bbox_inches=extent)
+                size = 320, 320
+                im = Image.open("test.png")
+                im_resized = im.resize(size, Image.ANTIALIAS)
+                im_resized.save("test.png", "PNG")
+                # calculate update needed
+                adjustment = predictor.predictions("test.png") - 0.25
+            
+            if i == 0 or i % delay == 0:
+                print("{} applying update".format(i))
+                vy.irrigation_rate += adjustment
+                # Prevent irrigation rate from becoming negative.
+                vy.irrigation_rate = vy.irrigation_rate.clip(min=0.0)
+
+            # Log total amount of irrigation used.
+            total_irrigation_used += np.sum(vy.irrigation_rate)
+
+            # Run simulation for one timestep.
+            vy.update(0)
+
+
+        # Close figures.
+        plt.clf()
+        plt.cla()
+        plt.close()
+
+        # print("AVERAGE IRRIGATION PER PLANT PER TIMESTEP NOISE = {}:".format(noise), total_irrigation_used / (i + 1) / 200.0 / 10.0)
+        moistures = np.array([p.soil_moisture for p in vy.vines])
+        variances.append(np.var(moistures))
+        num_leaves += np.sum([len(p.leaf_positions) for p in vy.vines])
+        # avg_leaves = num_leaves / 200.0
+        # avg_irr_per_leaf = total_irrigation_used / num_leaves
+        # print("AVERAGE IRRIGATION PER LEAF:", avg_irr_per_leaf)
+
+    print_data(variances, total_irrigation_used, num_leaves)
+
 
 def fixed_prediction_irrigation(predictor, noise=None, adjust_scale=None, spatial_rate=None):
     
@@ -232,6 +293,7 @@ def main():
     start_time = time.time()
     # predictor = predictions.Predictor("./saved_models/whole_image/noise_0_training_1000.ckpt", tf.Session())
     predictor = predictions.Predictor("/home/wsong/saved_models/whole_image/noise_0_training_1000.ckpt", tf.Session())
+    """
     print("NUMBER OF TRIALS {}".format(NUM_TRIALS))
     flood_irrigation(predictor)
     precision_irrigation(predictor)
@@ -251,7 +313,10 @@ def main():
         precision_irrigation(predictor, noise="spatial", spatial_rate=spatial_rate)
         fixed_prediction_irrigation(predictor, noise="spatial", spatial_rate=spatial_rate)
     spatial_time = time.time() - spatial_time
-
+    """
+    for delay in DELAYS:
+        print("{} TIME DELAY: {} {}".format("-"*35, delay, "-"*35))
+        precision_irrigation_delays(predictor, delay)
     print("Total Runtime: {} Mins".format((time.time() - start_time)/60))
     print("Gaussian Runtime: {} Mins".format(adjust_time/60))
     print("Spatial Runtime: {} Mins".format(spatial_time/60))
