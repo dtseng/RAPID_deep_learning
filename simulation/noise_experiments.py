@@ -19,8 +19,14 @@ TEST_SET = "/home/wsong/datasets/noise_0/test_data/regular/drainage_rate{0}.npy"
 ADJUST_SCALE = .1
 SPATIAL_RATE = .05
 VINEYARD_SHAPE = (20,10)
-NUM_TRIALS = 20
+NUM_TRIALS = 2
 COORDS = {0: (1,0), 1: (0, -1), 2: (-1, 0), 3: (0,1)}
+def print_data(variances, total_irrigation_used, num_leaves):
+    print("TOTAL IRRIGATION PER PLANT PER TIMESTEP: {}".format(total_irrigation_used / 200.0 / 10.0/ NUM_TRIALS))
+    print("AVERAGE LEAVES: {}".format(num_leaves / NUM_TRIALS))
+    print("AVERAGE IRRIGATION PER LEAF: {}".format(num_leaves / total_irrigation_used))
+    print("POOLED VARIANCE {}".format(np.mean(variances)))
+
 def add_spatial_noise(rates):
     original_shape = rates.shape
     rates = rates.reshape(VINEYARD_SHAPE)
@@ -44,7 +50,7 @@ def add_spatial_noise(rates):
 # Computes amount of water used from timesteps 10-20 if we simply use the maximum predicted drainage rate as a reference,
 # and apply the same amount of irrigation to all plants.
 def flood_irrigation(predictor, noise=None):
-    print("Running Flood Irrigation Experiment on Vineyard.")
+    print("Running Flood Irrigation Experiment on Vineyard. NOISE = {}".format(noise))
     total_irrigation_used = 0.0
     variances = []
     num_leaves = 0
@@ -95,11 +101,8 @@ def flood_irrigation(predictor, noise=None):
         # avg_irr_per_leaf = total_irrigation_used / num_leaves
         # print("AVERAGE IRRIGATION PER LEAF:", avg_irr_per_leaf)
 
-    print("TOTAL IRRIGATION (FLOOD) PER PLANT PER TIMESTEP NOISE = {}:".format(noise), total_irrigation_used / 200.0 / 10.0/ NUM_TRIALS)
-    print("AVERAGE LEAVES:", num_leaves / NUM_TRIALS)
-    print("AVERAGE IRRIGATION PER LEAF:", num_leaves / total_irrigation_used)
-    print("POOLED VARIANCE", np.mean(variances))
-
+    print_data(variances, total_irrigation_used, num_leaves)
+    
 
 # Computes amount of water used from timesteps 10-20 using the precision feedback controller.
 def precision_irrigation(predictor, noise=None):
@@ -162,10 +165,7 @@ def precision_irrigation(predictor, noise=None):
         # avg_irr_per_leaf = total_irrigation_used / num_leaves
         # print("AVERAGE IRRIGATION PER LEAF:", avg_irr_per_leaf)
 
-    print("TOTAL IRRIGATION (PRECISION) PER PLANT PER TIMESTEP NOISE = {}:".format(noise), total_irrigation_used / 200.0 / 10.0/ NUM_TRIALS)
-    print("AVERAGE LEAVES:", num_leaves / NUM_TRIALS)
-    print("AVERAGE IRRIGATION PER LEAF:", num_leaves / total_irrigation_used)
-    print("POOLED VARIANCE", np.mean(variances))
+    print_data(variances, total_irrigation_used, num_leaves)
 
 
 def fixed_prediction_irrigation(predictor, noise=None):
@@ -221,17 +221,14 @@ def fixed_prediction_irrigation(predictor, noise=None):
         # avg_irr_per_leaf = total_irrigation_used / num_leaves
         # print("AVERAGE IRRIGATION PER LEAF:", avg_irr_per_leaf)
 
-    print("TOTAL IRRIGATION (PRECISION) PER PLANT PER TIMESTEP NOISE = {}:".format(noise), total_irrigation_used / 200.0 / 10.0 / NUM_TRIALS)
-    print("AVERAGE LEAVES:", num_leaves / NUM_TRIALS)
-    print("AVERAGE IRRIGATION PER LEAF:", num_leaves / total_irrigation_used)
-    print("POOLED VARIANCE", np.mean(variances))
+    print_data(variances, total_irrigation_used, num_leaves)
 
 
 def main():
 
     # predictor = predictions.Predictor("./saved_models/whole_image/noise_0_training_1000.ckpt", tf.Session())
     predictor = predictions.Predictor("/home/wsong/saved_models/whole_image/noise_0_training_1000.ckpt", tf.Session())
-    print("NUMBER OF TRIALS", NUM_TRIALS)
+    print("NUMBER OF TRIALS {}".format(NUM_TRIALS))
     flood_irrigation(predictor)
     print
     precision_irrigation(predictor)
@@ -239,7 +236,7 @@ def main():
     fixed_prediction_irrigation(predictor)
     print
     
-    print("GUASSIAN ADJUSTMENT NOISE SCALE:", ADJUST_SCALE, "-"*70)
+    print("{} GUASSIAN ADJUSTMENT NOISE SCALE: {} {}".format("-"*70, ADJUST_SCALE, "-"*70))
     flood_irrigation(predictor, noise="adjustments")
     print
     precision_irrigation(predictor, noise="adjustments")
@@ -247,7 +244,7 @@ def main():
     fixed_prediction_irrigation(predictor, noise="adjustments")
     print
 
-    print("SPATIAL ADJUSTMENT NOISE:", SPATIAL_RATE, "-"*70)
+    print("{} SPATIAL ADJUSTMENT NOISE: {} {}".format("-"*70, SPATIAL_RATE, "-"*70))
     print
     precision_irrigation(predictor, noise="spatial")
     print
