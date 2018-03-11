@@ -21,7 +21,7 @@ ADJUST_SCALES = [.1, .2, .3, .4]
 SPATIAL_RATES = [.05, .1, .20, .30]
 DELAYS = [2, 3, 4, 5]
 VINEYARD_SHAPE = (20,10)
-NUM_TRIALS = 2
+NUM_TRIALS = 20
 COORDS = {0: (1,0), 1: (0, -1), 2: (-1, 0), 3: (0,1)}
 def print_data(variances, total_irrigation_used, num_leaves):
     print("TOTAL IRRIGATION PER PLANT PER TIMESTEP: {}".format(total_irrigation_used / 200.0 / 10.0/ NUM_TRIALS))
@@ -193,7 +193,6 @@ def precision_irrigation_delays(predictor, delay):
             # Save image.
             # calculate update needed at beginning and at adjustment interval midpoints
             if i == 0 or (i + delay//2) % delay == 0:
-                print("{} cacluating adjustment needed".format(i))
                 extent = vy.ax1.get_window_extent().transformed(vy.fig.dpi_scale_trans.inverted())
                 vy.fig.savefig("test.png", bbox_inches=extent)
                 size = 320, 320
@@ -204,7 +203,6 @@ def precision_irrigation_delays(predictor, delay):
                 adjustment = predictor.predictions("test.png") - 0.25
             
             if i == 0 or i % delay == 0:
-                print("{} applying update".format(i))
                 vy.irrigation_rate += adjustment
                 # Prevent irrigation rate from becoming negative.
                 vy.irrigation_rate = vy.irrigation_rate.clip(min=0.0)
@@ -318,8 +316,8 @@ def main():
         print("{} TIME DELAY: {} {}".format("-"*35, delay, "-"*35))
         precision_irrigation_delays(predictor, delay)
     print("Total Runtime: {} Mins".format((time.time() - start_time)/60))
-    print("Gaussian Runtime: {} Mins".format(adjust_time/60))
-    print("Spatial Runtime: {} Mins".format(spatial_time/60))
+    # print("Gaussian Runtime: {} Mins".format(adjust_time/60))
+    # print("Spatial Runtime: {} Mins".format(spatial_time/60))
 
 if __name__ == '__main__':
     main()
