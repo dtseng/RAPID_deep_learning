@@ -29,11 +29,11 @@ def print_data(variances, total_irrigation_used, num_leaves):
     print("POOLED VARIANCE {}".format(np.mean(variances)))
     print
 
-def add_spatial_noise(rates):
+def add_spatial_noise(rates, spatial_rate):
     original_shape = rates.shape
     rates = rates.reshape(VINEYARD_SHAPE)
     # sample which emitters will be switched
-    p = (1 - SPATIAL_RATE, SPATIAL_RATE)
+    p = (1 - spatial_rate, spatial_rate)
     # size = (VINEYARD_SHAPE[0] - 2,VINEYARD_SHAPE[1] - 2)
     mask = np.random.choice((0,1), size=VINEYARD_SHAPE, p=p)
     # print("number of swaps:", np.sum(mask[1:-1, 1:-1]))
@@ -51,7 +51,7 @@ def add_spatial_noise(rates):
 
 # Computes amount of water used from timesteps 10-20 if we simply use the maximum predicted drainage rate as a reference,
 # and apply the same amount of irrigation to all plants.
-def flood_irrigation(predictor, noise=None):
+def flood_irrigation(predictor, noise=None, adjust_scale=None):
     print("Running Flood Irrigation Experiment on Vineyard. NOISE = {}".format(noise))
     total_irrigation_used = 0.0
     variances = []
@@ -81,7 +81,7 @@ def flood_irrigation(predictor, noise=None):
         rates = rate * np.ones(vy.irrigation_rate.shape) # cast into correct shape
         # add noise if neccesary
         if noise == "adjustments":
-            rates += np.random.normal(scale=ADJUST_SCALE, size=rates.shape)
+            rates += np.random.normal(scale=adjust_scale, size=rates.shape)
         
         vy.irrigation_rate = rates
 
@@ -107,7 +107,7 @@ def flood_irrigation(predictor, noise=None):
     
 
 # Computes amount of water used from timesteps 10-20 using the precision feedback controller.
-def precision_irrigation(predictor, noise=None):
+def precision_irrigation(predictor, noise=None, adjust_scale=None, spatial_rate=None):
     print("Running Precision Irrigation Experiment on Vineyard")
     total_irrigation_used = 0.0
     variances = []
@@ -139,10 +139,10 @@ def precision_irrigation(predictor, noise=None):
             saved_rates = vy.irrigation_rate
 
             if noise == "adjustments":
-                vy.irrigation_rate += np.random.normal(scale=ADJUST_SCALE, size=vy.irrigation_rate.shape)
+                vy.irrigation_rate += np.random.normal(scale=adjust_scale, size=vy.irrigation_rate.shape)
             
             if noise == "spatial":
-                vy.irrigation_rate = add_spatial_noise(vy.irrigation_rate) 
+                vy.irrigation_rate = add_spatial_noise(vy.irrigation_rate, spatial_rate) 
             # Prevent irrigation rate from becoming negative.
             vy.irrigation_rate = vy.irrigation_rate.clip(min=0.0)
 
@@ -170,7 +170,7 @@ def precision_irrigation(predictor, noise=None):
     print_data(variances, total_irrigation_used, num_leaves)
 
 
-def fixed_prediction_irrigation(predictor, noise=None):
+def fixed_prediction_irrigation(predictor, noise=None, adjust_scale=None, spatial_rate=None):
     
     print("Running Fixed Prediction Irrigation Experiment on Vineyard")
     variances = []
@@ -197,10 +197,10 @@ def fixed_prediction_irrigation(predictor, noise=None):
         fixed_rates = predictor.predictions("test.png") + 0.25
         # Apply feedback controller for 10 timesteps.
         if noise == "spatial":
-            fixed_rates = add_spatial_noise(fixed_rates)
+            fixed_rates = add_spatial_noise(vy.irrigation_rate, spatial_rate) 
         # add guassian noise to simulate human error of adjustments
         if noise == "adjustments":
-            fixed_rates += np.random.normal(scale=ADJUST_SCALE, size=fixed_rates.shape)
+            fixed_rates += np.random.normal(scale=adjust_scale, size=fixed_rates.shape)
             fixed_rates = fixed_rates.clip(min=0.0)
         vy.irrigation_rate = fixed_rates
         for _ in range(10):
@@ -239,16 +239,16 @@ def main():
     adjust_time = time.time()
     for adjust_scale in ADJUST_SCALES:
         print("{} GUASSIAN ADJUSTMENT NOISE SCALE: {} {}".format("-"*35, adjust_scale, "-"*35))
-        flood_irrigation(predictor, noise="adjustments")
-        precision_irrigation(predictor, noise="adjustments")
-        fixed_prediction_irrigation(predictor, noise="adjustments")
+        flood_irrigation(predictor, noise="adjustments", adjust_scale=adjust_scale)
+        precision_irrigation(predictor, noise="adjustments", adjust_scale=adjust_scale)
+        fixed_prediction_irrigation(predictor, noise="adjustments", adjust_scale=adjust_scale)
     adjust_time = time.time() - adjust_time
 
     spatial_time = time.time()
     for spatial_rate in SPATIAL_RATES:
         print("{} SPATIAL ADJUSTMENT NOISE: {} {}".format("-"*35, spatial_rate, "-"*35))
-        precision_irrigation(predictor, noise="spatial")
-        fixed_prediction_irrigation(predictor, noise="spatial")
+        precision_irrigation(predictor, noise="spatial", spatial_rate=spatial_rate)
+        fixed_prediction_irrigation(predictor, noise="spatial", spatial_rate=spatial_rate)
     spatial_time = time.time() - spatial_time
 
     print("Total Runtime: {} Mins".format((time.time() - start_time)/60))
