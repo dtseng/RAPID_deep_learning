@@ -20,7 +20,7 @@ ADJUST_SCALE = .1
 MECH_SCALE = .1
 SPATIAL_RATE = .05
 VINEYARD_SHAPE = (20,10)
-NUM_TRIALS = 20
+NUM_TRIALS = 2
 COORDS = {0: (1,0), 1: (0, -1), 2: (-1, 0), 3: (0,1)}
 def add_spatial_noise(rates):
     original_shape = rates.shape
@@ -59,7 +59,6 @@ def flood_irrigation(predictor, noise=None):
         for _ in range(10):
             vy.update(0)
 
-
         # save image to make prediciton off of
         extent = vy.ax1.get_window_extent().transformed(vy.fig.dpi_scale_trans.inverted())
         vy.fig.savefig("test.png", bbox_inches=extent)
@@ -86,7 +85,7 @@ def flood_irrigation(predictor, noise=None):
         plt.cla()
         plt.close()
 
-        total_irrigation_used += 10.0 * 200.0 * rates
+        total_irrigation_used += 10.0 * 200.0 * rate
 
         moistures = np.array([p.soil_moisture for p in vy.vines])
         variances.append(np.var(moistures))
@@ -161,6 +160,7 @@ def precision_irrigation(predictor, noise=None):
 def fixed_prediction_irrigation(predictor, noise=None):
     # Run experiment over all test set vineyards.
     variances = []
+    total_irrigation_used = 0
     for i in range(NUM_TRIALS):
         print("Running Fixed Prediction Irrigation Experiment on Vineyard {0}.".format(i))
 
@@ -189,8 +189,6 @@ def fixed_prediction_irrigation(predictor, noise=None):
             fixed_rates = fixed_rates.clip(min=0.0)
         vy.irrigation_rate = fixed_rates
         for _ in range(10):
-            # Log total amount of irrigation used. Could potentially sum at end
-            total_irrigation_used += np.sum(vy.irrigation_rate)
 
             # Run simulation for one timestep.
             vy.update(0)
@@ -200,6 +198,8 @@ def fixed_prediction_irrigation(predictor, noise=None):
         plt.cla()
         plt.close()
 
+        # Log total amount of irrigation used
+        total_irrigation_used = 10 * np.sum(vy.irrigation_rate)
         print("AVERAGE IRRIGATION PER PLANT PER TIMESTEP NOISE = {}:".format(noise), total_irrigation_used / (i + 1) / 200.0 / 10.0)
         moistures = np.array([p.soil_moisture for p in vy.vines])
         variances.append(np.var(moistures))
