@@ -72,7 +72,7 @@ def flood_irrigation(predictor, noise=None):
         rates = rate * np.ones(vy.irrigation_rate.shape) # cast into correct shape
         # add noise if neccesary
         if noise == "adjustments":
-            rates += np.random.normal(scale=ADJUST_SCALE, size=fixed_rates.shape)
+            rates += np.random.normal(scale=ADJUST_SCALE, size=rates.shape)
         
         vy.irrigation_rate = rates
 
