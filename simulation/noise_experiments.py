@@ -69,8 +69,8 @@ def flood_irrigation(predictor, noise=None):
         im_resized.save("test.png", "PNG")
 
         # make predictions
-        rates = np.max(predictor.predictions("test.png")) + 0.25
-        
+        rate = np.max(predictor.predictions("test.png")) + 0.25
+        rates = rate * np.ones(vy.irrigation_rate.shape) # cast into correct shape
         # add noise if neccesary
         if noise == "adjustments":
             rates += np.random.normal(scale=ADJUST_SCALE, size=fixed_rates.shape)
