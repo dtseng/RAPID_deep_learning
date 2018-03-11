@@ -46,7 +46,7 @@ def add_spatial_noise(rates):
 # and apply the same amount of irrigation to all plants.
 def flood_irrigation(predictor, noise=None):
     total_irrigation_used = 0.0
-
+    variances = []
     # Run experiment over all test set vineyards.
     for i in range(NUM_TRIALS):
         # Apply irrigation equal to 0.25 more than the maximum predicted drainage rate over all 10 timesteps.
@@ -88,13 +88,21 @@ def flood_irrigation(predictor, noise=None):
 
         total_irrigation_used += 10.0 * 200.0 * rates
 
-    print("TOTAL IRRIGATION (FLOOD) PER PLANT PER TIMESTEP:", total_irrigation_used / 200.0 / 10.0/ NUM_TRIALS)
+        moistures = np.array([p.soil_moisture for p in vy.vines])
+        variances.append(np.var(moistures))
+        num_leaves = sum([len(p.leaf_positions) for p in vy.vines])
+        avg_leaves = num_leaves / 200.0
+        avg_irr_per_leaf = total_irrigation_used / num_leaves
+        print("AVERAGE IRRIGATION PER LEAF:", avg_irr_per_leaf)
+
+    print("TOTAL IRRIGATION (FLOOD) PER PLANT PER TIMESTEP NOISE = {}:".format(noise), total_irrigation_used / 200.0 / 10.0/ NUM_TRIALS)
+    print("VARIANCE", variances)
 
 
 # Computes amount of water used from timesteps 10-20 using the precision feedback controller.
 def precision_irrigation(predictor, noise=None):
     total_irrigation_used = 0.0
-
+    variances = []
     # Run experiment over all test set vineyards.
     for i in range(NUM_TRIALS):
         print("Running Precision Irrigation Experiment on Vineyard {0}.".format(i))
@@ -138,12 +146,21 @@ def precision_irrigation(predictor, noise=None):
         plt.cla()
         plt.close()
 
-        print("AVERAGE IRRIGATION PER PLANT PER TIMESTEP:", total_irrigation_used / (i + 1) / 200.0 / 10.0)
+        print("AVERAGE IRRIGATION PER PLANT PER TIMESTEP NOISE = {}:".format(noise), total_irrigation_used / (i + 1) / 200.0 / 10.0)
+        moistures = np.array([p.soil_moisture for p in vy.vines])
+        variances.append(np.var(moistures))
+        num_leaves = sum([len(p.leaf_positions) for p in vy.vines])
+        avg_leaves = num_leaves / 200.0
+        avg_irr_per_leaf = total_irrigation_used / num_leaves
+        print("AVERAGE IRRIGATION PER LEAF:", avg_irr_per_leaf)
 
-    print("TOTAL IRRIGATION (PRECISION) PER PLANT PER TIMESTEP:", total_irrigation_used / 200.0 / 10.0/ NUM_TRIALS)
+    print("TOTAL IRRIGATION (PRECISION) PER PLANT PER TIMESTEP NOISE = {}:".format(noise), total_irrigation_used / 200.0 / 10.0/ NUM_TRIALS)
+    print("VARIANCE", variances)
+
 
 def fixed_prediction_irrigation(predictor, noise=None):
     # Run experiment over all test set vineyards.
+    variances = []
     for i in range(NUM_TRIALS):
         print("Running Fixed Prediction Irrigation Experiment on Vineyard {0}.".format(i))
 
@@ -172,14 +189,7 @@ def fixed_prediction_irrigation(predictor, noise=None):
             fixed_rates = fixed_rates.clip(min=0.0)
         vy.irrigation_rate = fixed_rates
         for _ in range(10):
-            # Save image.
-            if noise == "mechanical":
-                # center at fixed rates
-                vy.irrigation_rate = fixed_rates 
-                # add mechaincal emitter noise
-                vy.irrigation_rate += np.random.normal(scale=MECH_SCALE, size=fixed_rates.shape)
-            
-            # Log total amount of irrigation used.
+            # Log total amount of irrigation used. Could potentially sum at end
             total_irrigation_used += np.sum(vy.irrigation_rate)
 
             # Run simulation for one timestep.
@@ -191,13 +201,31 @@ def fixed_prediction_irrigation(predictor, noise=None):
         plt.close()
 
         print("AVERAGE IRRIGATION PER PLANT PER TIMESTEP NOISE = {}:".format(noise), total_irrigation_used / (i + 1) / 200.0 / 10.0)
+        moistures = np.array([p.soil_moisture for p in vy.vines])
+        variances.append(np.var(moistures))
+        num_leaves = sum([len(p.leaf_positions) for p in vy.vines])
+        avg_leaves = num_leaves / 200.0
+        avg_irr_per_leaf = total_irrigation_used / num_leaves
+        print("AVERAGE IRRIGATION PER LEAF:", avg_irr_per_leaf)
 
-    print("TOTAL IRRIGATION (PRECISION) PER PLANT PER TIMESTEP:", total_irrigation_used / 200.0 / 10.0 / NUM_TRIALS)
+    print("TOTAL IRRIGATION (PRECISION) PER PLANT PER TIMESTEP NOISE = {}:".format(noise), total_irrigation_used / 200.0 / 10.0 / NUM_TRIALS)
+    print("VARIANCE", variances)
+
+
 def main():
     predictor = predictions.Predictor("./saved_models/whole_image/noise_0_training_1000.ckpt", tf.Session())
     flood_irrigation(predictor)
     precision_irrigation(predictor)
-    print("GUASSIAN" )
+    fixed_prediction_irrigation(predictor)
+    
+    print("GUASSIAN ADJUSTMENT NOISE", "-"*40)
+    flood_irrigation(predictor, noise="adjustments")
+    precision_irrigation(predictor, noise="adjustments")
+    fixed_prediction_irrigation(predictor, noise="adjustments")
+
+    print("SPATIAL ADJUSTMENT NOISE", "-"*40)
+    precision_irrigation(predictor, noise="spatial")
+    fixed_prediction_irrigation(predictor, noise="spatial")
 
 if __name__ == '__main__':
     main()
