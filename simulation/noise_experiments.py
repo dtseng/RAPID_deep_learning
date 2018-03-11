@@ -8,6 +8,7 @@ import matplotlib.cm as cm
 import matplotlib.gridspec as gridspec
 import os
 import tensorflow as tf
+import time
 
 from PIL import Image
 from matplotlib.animation import FuncAnimation
@@ -16,8 +17,8 @@ from matplotlib.animation import FuncAnimation
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 # os.environ["CUDA_VISIBLE_DEVICES"] = "3"
 TEST_SET = "/home/wsong/datasets/noise_0/test_data/regular/drainage_rate{0}.npy"
-ADJUST_SCALE = .1
-SPATIAL_RATE = .05
+ADJUST_SCALES = [.1, .2, .3, .4]
+SPATIAL_RATES = [.05, .1, .20, .30]
 VINEYARD_SHAPE = (20,10)
 NUM_TRIALS = 2
 COORDS = {0: (1,0), 1: (0, -1), 2: (-1, 0), 3: (0,1)}
@@ -26,6 +27,7 @@ def print_data(variances, total_irrigation_used, num_leaves):
     print("AVERAGE LEAVES: {}".format(num_leaves / NUM_TRIALS))
     print("AVERAGE IRRIGATION PER LEAF: {}".format(num_leaves / total_irrigation_used))
     print("POOLED VARIANCE {}".format(np.mean(variances)))
+    print
 
 def add_spatial_noise(rates):
     original_shape = rates.shape
@@ -226,30 +228,32 @@ def fixed_prediction_irrigation(predictor, noise=None):
 
 def main():
 
+    start_time = time.time()
     # predictor = predictions.Predictor("./saved_models/whole_image/noise_0_training_1000.ckpt", tf.Session())
     predictor = predictions.Predictor("/home/wsong/saved_models/whole_image/noise_0_training_1000.ckpt", tf.Session())
     print("NUMBER OF TRIALS {}".format(NUM_TRIALS))
     flood_irrigation(predictor)
-    print
     precision_irrigation(predictor)
-    print
     fixed_prediction_irrigation(predictor)
-    print
-    
-    print("{} GUASSIAN ADJUSTMENT NOISE SCALE: {} {}".format("-"*70, ADJUST_SCALE, "-"*70))
-    flood_irrigation(predictor, noise="adjustments")
-    print
-    precision_irrigation(predictor, noise="adjustments")
-    print
-    fixed_prediction_irrigation(predictor, noise="adjustments")
-    print
 
-    print("{} SPATIAL ADJUSTMENT NOISE: {} {}".format("-"*70, SPATIAL_RATE, "-"*70))
-    print
-    precision_irrigation(predictor, noise="spatial")
-    print
-    fixed_prediction_irrigation(predictor, noise="spatial")
-    print
+    adjust_time = time.time()
+    for adjust_scale in ADJUST_SCALES:
+        print("{} GUASSIAN ADJUSTMENT NOISE SCALE: {} {}".format("-"*35, adjust_scale, "-"*35))
+        flood_irrigation(predictor, noise="adjustments")
+        precision_irrigation(predictor, noise="adjustments")
+        fixed_prediction_irrigation(predictor, noise="adjustments")
+    adjust_time = time.time() - adjust_time
+
+    spatial_time = time.time()
+    for spatial_rate in SPATIAL_RATES:
+        print("{} SPATIAL ADJUSTMENT NOISE: {} {}".format("-"*35, spatial_rate, "-"*35))
+        precision_irrigation(predictor, noise="spatial")
+        fixed_prediction_irrigation(predictor, noise="spatial")
+    spatial_time = time.time() - spatial_time
+
+    print("Total Runtime: {} Mins".format((time.time() - start_time)/60))
+    print("Gaussian Runtime: {} Mins".format(adjust_time))
+    print("Spatial Runtime: {} Mins".format(spatial_time))
 
 if __name__ == '__main__':
     main()
