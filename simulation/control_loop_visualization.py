@@ -14,10 +14,11 @@ from matplotlib.animation import FuncAnimation
 
 # Used for specifying which GPU to train on.
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-os.environ["CUDA_VISIBLE_DEVICES"] = "3"
+# os.environ["CUDA_VISIBLE_DEVICES"] = "3"
 
 # Initialize example vineyard.
 vy = simulation.Vineyard()
+print("vy irrigation shape:", vy.irrigation_rate.shape)
 vy.drainage_rate = np.load("./datasets/noise_0/test_data/regular/drainage_rate0.npy")
 
 # Update vineyard for 10 timesteps.
