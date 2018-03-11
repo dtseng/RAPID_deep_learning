@@ -15,7 +15,7 @@ from matplotlib.animation import FuncAnimation
 # Used for specifying which GPU to train on.
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 # os.environ["CUDA_VISIBLE_DEVICES"] = "3"
-
+TEST_SET = "/home/wsong/datasets/noise_0/test_data/regular/drainage_rate{0}.npy"
 ADJUST_SCALE = .1
 MECH_SCALE = .1
 SPATIAL_RATE = .05
@@ -53,7 +53,7 @@ def flood_irrigation(predictor, noise=None):
         print("Running Flood Irrigation Experiment on Vineyard {0}.".format(i))
 
         vy = simulation.Vineyard()
-        vy.drainage_rate = np.load("datasets/noise_0/test_data/regular/drainage_rate{0}.npy".format(i))
+        vy.drainage_rate = np.load(TEST_SET.format(i))
 
         # Update for 10 timesteps.
         for _ in range(10):
@@ -108,7 +108,7 @@ def precision_irrigation(predictor, noise=None):
         print("Running Precision Irrigation Experiment on Vineyard {0}.".format(i))
 
         vy = simulation.Vineyard()
-        vy.drainage_rate = np.load("datasets/noise_0/test_data/regular/drainage_rate{0}.npy".format(i))
+        vy.drainage_rate = np.load(TEST_SET.format(i))
 
         # Update for 10 timesteps.
         for _ in range(10):
@@ -165,7 +165,7 @@ def fixed_prediction_irrigation(predictor, noise=None):
         print("Running Fixed Prediction Irrigation Experiment on Vineyard {0}.".format(i))
 
         vy = simulation.Vineyard()
-        vy.drainage_rate = np.load("datasets/noise_0/test_data/regular/drainage_rate{0}.npy".format(i))
+        vy.drainage_rate = np.load(TEST_SET.format(i))
 
         # Update for 10 timesteps.
         for _ in range(10):
@@ -213,7 +213,9 @@ def fixed_prediction_irrigation(predictor, noise=None):
 
 
 def main():
-    predictor = predictions.Predictor("./saved_models/whole_image/noise_0_training_1000.ckpt", tf.Session())
+
+    # predictor = predictions.Predictor("./saved_models/whole_image/noise_0_training_1000.ckpt", tf.Session())
+    predictor = predictions.Predictor("/home/wsong/saved_models/whole_image/noise_0_training_1000.ckpt", tf.Session())
     flood_irrigation(predictor)
     precision_irrigation(predictor)
     fixed_prediction_irrigation(predictor)
