@@ -171,7 +171,7 @@ def precision_irrigation(predictor, noise=None, adjust_scale=None, spatial_rate=
 
     print_data(variances, total_irrigation_used, num_leaves)
 
-def precision_irrigation_delays(predictor, interval_size):
+def precision_irrigation_delays(predictor, delay):
     print("Running Precision Irrigation Experiment on Vineyard")
     total_irrigation_used = 0.0
     variances = []
