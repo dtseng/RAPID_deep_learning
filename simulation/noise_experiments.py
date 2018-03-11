@@ -20,13 +20,14 @@ TEST_SET = "/home/wsong/datasets/noise_0/test_data/regular/drainage_rate{0}.npy"
 ADJUST_SCALES = [.1, .2, .3, .4]
 SPATIAL_RATES = [.05, .1, .20, .30]
 VINEYARD_SHAPE = (20,10)
-NUM_TRIALS = 2
+NUM_TRIALS = 20
 COORDS = {0: (1,0), 1: (0, -1), 2: (-1, 0), 3: (0,1)}
 def print_data(variances, total_irrigation_used, num_leaves):
     print("TOTAL IRRIGATION PER PLANT PER TIMESTEP: {}".format(total_irrigation_used / 200.0 / 10.0/ NUM_TRIALS))
     print("AVERAGE LEAVES: {}".format(num_leaves / NUM_TRIALS))
     print("AVERAGE IRRIGATION PER LEAF: {}".format(num_leaves / total_irrigation_used))
     print("POOLED VARIANCE {}".format(np.mean(variances)))
+    print("STANDARD DEVIATION OF SAMPLE VARIANCES {}".format(np.std(variances)))
     print
 
 def add_spatial_noise(rates, spatial_rate):
@@ -252,8 +253,8 @@ def main():
     spatial_time = time.time() - spatial_time
 
     print("Total Runtime: {} Mins".format((time.time() - start_time)/60))
-    print("Gaussian Runtime: {} Mins".format(adjust_time))
-    print("Spatial Runtime: {} Mins".format(spatial_time))
+    print("Gaussian Runtime: {} Mins".format(adjust_time/60))
+    print("Spatial Runtime: {} Mins".format(spatial_time/60))
 
 if __name__ == '__main__':
     main()
