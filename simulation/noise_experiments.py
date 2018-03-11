@@ -29,7 +29,7 @@ def add_spatial_noise(rates):
     p = (1 - SPATIAL_RATE, SPATIAL_RATE)
     # size = (VINEYARD_SHAPE[0] - 2,VINEYARD_SHAPE[1] - 2)
     mask = np.random.choice((0,1), size=VINEYARD_SHAPE, p=p)
-    print("number of swaps:", np.sum(mask[1:-1, 1:-1]))
+    # print("number of swaps:", np.sum(mask[1:-1, 1:-1]))
     #decide which direction to switch, do not iterate through edges
     for i in range(1, VINEYARD_SHAPE[0]-1):
         for j in range(1, VINEYARD_SHAPE[1]-1):
@@ -208,8 +208,8 @@ def fixed_prediction_irrigation(predictor, noise=None):
         plt.close()
 
         # Log total amount of irrigation used
-        total_irrigation_used = 10 * np.sum(vy.irrigation_rate)
-        print("AVERAGE IRRIGATION PER PLANT PER TIMESTEP NOISE = {}:".format(noise), total_irrigation_used / (i + 1) / 200.0 / 10.0)
+        total_irrigation_used += 10 * np.sum(vy.irrigation_rate)
+        # print("AVERAGE IRRIGATION PER PLANT PER TIMESTEP NOISE = {}:".format(noise), total_irrigation_used / (i + 1) / 200.0 / 10.0)
         moistures = np.array([p.soil_moisture for p in vy.vines])
         variances.append(np.var(moistures))
         num_leaves += np.sum([len(p.leaf_positions) for p in vy.vines])
@@ -227,17 +227,26 @@ def main():
     # predictor = predictions.Predictor("./saved_models/whole_image/noise_0_training_1000.ckpt", tf.Session())
     predictor = predictions.Predictor("/home/wsong/saved_models/whole_image/noise_0_training_1000.ckpt", tf.Session())
     flood_irrigation(predictor)
+    print
     precision_irrigation(predictor)
+    print
     fixed_prediction_irrigation(predictor)
+    print
     
-    print("GUASSIAN ADJUSTMENT NOISE", "-"*40)
+    print("GUASSIAN ADJUSTMENT NOISE", "-"*70)
     flood_irrigation(predictor, noise="adjustments")
+    print
     precision_irrigation(predictor, noise="adjustments")
+    print
     fixed_prediction_irrigation(predictor, noise="adjustments")
+    print
 
-    print("SPATIAL ADJUSTMENT NOISE", "-"*40)
+    print("SPATIAL ADJUSTMENT NOISE", "-"*70)
+    print
     precision_irrigation(predictor, noise="spatial")
+    print
     fixed_prediction_irrigation(predictor, noise="spatial")
+    print
 
 if __name__ == '__main__':
     main()
