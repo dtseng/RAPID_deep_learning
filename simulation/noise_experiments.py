@@ -47,6 +47,7 @@ def add_spatial_noise(rates):
 def flood_irrigation(predictor, noise=None):
     total_irrigation_used = 0.0
     variances = []
+    num_leaves = 0
     # Run experiment over all test set vineyards.
     for i in range(NUM_TRIALS):
         # Apply irrigation equal to 0.25 more than the maximum predicted drainage rate over all 10 timesteps.
@@ -89,12 +90,13 @@ def flood_irrigation(predictor, noise=None):
 
         moistures = np.array([p.soil_moisture for p in vy.vines])
         variances.append(np.var(moistures))
-        num_leaves = sum([len(p.leaf_positions) for p in vy.vines])
-        avg_leaves = num_leaves / 200.0
-        avg_irr_per_leaf = total_irrigation_used / num_leaves
-        print("AVERAGE IRRIGATION PER LEAF:", avg_irr_per_leaf)
+        num_leaves += np.sum([len(p.leaf_positions) for p in vy.vines])
+        # avg_leaves = num_leaves / 200.0
+        # avg_irr_per_leaf = total_irrigation_used / num_leaves
+        # print("AVERAGE IRRIGATION PER LEAF:", avg_irr_per_leaf)
 
     print("TOTAL IRRIGATION (FLOOD) PER PLANT PER TIMESTEP NOISE = {}:".format(noise), total_irrigation_used / 200.0 / 10.0/ NUM_TRIALS)
+    print("AVERAGE IRRIGATION PER LEAF:", num_leaves / total_irrigation_used)
     print("VARIANCE", variances)
 
 
@@ -102,6 +104,7 @@ def flood_irrigation(predictor, noise=None):
 def precision_irrigation(predictor, noise=None):
     total_irrigation_used = 0.0
     variances = []
+    num_leaves = 0
     # Run experiment over all test set vineyards.
     for i in range(NUM_TRIALS):
         print("Running Precision Irrigation Experiment on Vineyard {0}.".format(i))
@@ -125,6 +128,8 @@ def precision_irrigation(predictor, noise=None):
 
             # Apply feedback update equation.
             vy.irrigation_rate += predictor.predictions("test.png") - 0.25
+            # save rates pre noise
+            saved_rates = vy.irrigation_rate
 
             if noise == "adjustments":
                 vy.irrigation_rate += np.random.normal(scale=ADJUST_SCALE, size=fixed_rates.shape)
@@ -140,20 +145,23 @@ def precision_irrigation(predictor, noise=None):
             # Run simulation for one timestep.
             vy.update(0)
 
+            vy.irrigation_rate = saved_rates
+
         # Close figures.
         plt.clf()
         plt.cla()
         plt.close()
 
-        print("AVERAGE IRRIGATION PER PLANT PER TIMESTEP NOISE = {}:".format(noise), total_irrigation_used / (i + 1) / 200.0 / 10.0)
+        # print("AVERAGE IRRIGATION PER PLANT PER TIMESTEP NOISE = {}:".format(noise), total_irrigation_used / (i + 1) / 200.0 / 10.0)
         moistures = np.array([p.soil_moisture for p in vy.vines])
         variances.append(np.var(moistures))
-        num_leaves = sum([len(p.leaf_positions) for p in vy.vines])
-        avg_leaves = num_leaves / 200.0
-        avg_irr_per_leaf = total_irrigation_used / num_leaves
-        print("AVERAGE IRRIGATION PER LEAF:", avg_irr_per_leaf)
+        num_leaves += np.sum([len(p.leaf_positions) for p in vy.vines])
+        # avg_leaves = num_leaves / 200.0
+        # avg_irr_per_leaf = total_irrigation_used / num_leaves
+        # print("AVERAGE IRRIGATION PER LEAF:", avg_irr_per_leaf)
 
     print("TOTAL IRRIGATION (PRECISION) PER PLANT PER TIMESTEP NOISE = {}:".format(noise), total_irrigation_used / 200.0 / 10.0/ NUM_TRIALS)
+    print("AVERAGE IRRIGATION PER LEAF:", num_leaves / total_irrigation_used)
     print("VARIANCE", variances)
 
 
@@ -161,6 +169,7 @@ def fixed_prediction_irrigation(predictor, noise=None):
     # Run experiment over all test set vineyards.
     variances = []
     total_irrigation_used = 0
+    num_leaves = 0
     for i in range(NUM_TRIALS):
         print("Running Fixed Prediction Irrigation Experiment on Vineyard {0}.".format(i))
 
@@ -203,12 +212,13 @@ def fixed_prediction_irrigation(predictor, noise=None):
         print("AVERAGE IRRIGATION PER PLANT PER TIMESTEP NOISE = {}:".format(noise), total_irrigation_used / (i + 1) / 200.0 / 10.0)
         moistures = np.array([p.soil_moisture for p in vy.vines])
         variances.append(np.var(moistures))
-        num_leaves = sum([len(p.leaf_positions) for p in vy.vines])
-        avg_leaves = num_leaves / 200.0
-        avg_irr_per_leaf = total_irrigation_used / num_leaves
-        print("AVERAGE IRRIGATION PER LEAF:", avg_irr_per_leaf)
+        num_leaves += np.sum([len(p.leaf_positions) for p in vy.vines])
+        # avg_leaves = num_leaves / 200.0
+        # avg_irr_per_leaf = total_irrigation_used / num_leaves
+        # print("AVERAGE IRRIGATION PER LEAF:", avg_irr_per_leaf)
 
     print("TOTAL IRRIGATION (PRECISION) PER PLANT PER TIMESTEP NOISE = {}:".format(noise), total_irrigation_used / 200.0 / 10.0 / NUM_TRIALS)
+    print("AVERAGE IRRIGATION PER LEAF:", num_leaves / total_irrigation_used)
     print("VARIANCE", variances)
 
 
