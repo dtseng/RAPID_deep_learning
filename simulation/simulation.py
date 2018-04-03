@@ -103,14 +103,15 @@ class Plant(object):
         # First-order approximation of Richards equation.
         self.soil_moisture += irrigation_rate - dissipation_rate + np.random.normal(scale=noise)
 
-        # New leaves are added if soil moisture is non-negative.
-        if self.soil_moisture>=0:
+        # New leaves are added if soil moisture is non-negative and less than 2 (not overwatered).
+        if self.soil_moisture>0 and self.soil_moisture<2:
             new_leaves = np.random.multivariate_normal(self.position, 
                                                        self.soil_moisture * self.growth_ratio, 
                                                        self.leaf_num)
             self.leaf_positions=np.vstack((self.leaf_positions, new_leaves))
+
         # Soil moisture cannot be negative.
-        else:
+        elif self.soil_moisture<0:
             self.soil_moisture = 0
 
         # Color the new leaves.
@@ -121,9 +122,9 @@ class Plant(object):
         num_leaves = len(self.leaf_positions[:, 0])
 
         # We use shades of green for the leaves if soil moisture is positive.
-        if self.soil_moisture>0:
+        if self.soil_moisture>0 and self.soil_moisture<2:
             colors = [0, 153/256.0, 0, 0.2] + np.random.uniform(-.2, .2, (num_leaves, 4)) + [-10/256.0, 0, 0, 0]
-        # We use shades of yellow if the soil moisture is zero.
+        # We use shades of yellow if the soil moisture is zero or over 2.
         else:
             colors = [128/256.0, 128/256.0, 0/256.0, 1] + np.random.uniform(-.1, .1, (num_leaves, 4))
 
