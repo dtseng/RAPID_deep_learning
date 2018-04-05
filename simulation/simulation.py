@@ -9,7 +9,7 @@ import matplotlib.gridspec as gridspec
 
 from matplotlib.animation import FuncAnimation
 from scipy.misc import imread
-
+import pandas as pd
 
 # ----------------- PARAMETERS FOR DATASET EXAMPLE GENERATION -----------------
 
@@ -39,7 +39,7 @@ potted_plants_mode = False
 def soil_variation(X):
     # Choose the number of areas of high dissipation uniformly at random in the
     # specified range.
-    num_gaussians = np.random.randint(MIN_NUM_GAUSSIANS, MAX_NUM_GAUSSIANS + 1)
+    num_gaussians= np.random.randint(MIN_NUM_GAUSSIANS, MAX_NUM_GAUSSIANS + 1)
 
     # Vector of soil moisture dissipation at each of the plants.
     dr = np.zeros(200)
@@ -49,17 +49,18 @@ def soil_variation(X):
     for _ in range(num_gaussians):
         # Choose the center uniformly at random in the field.
         mu_x = np.random.uniform(100.0)
-        mu_y = np.random.uniform(100.0)
+        mu_y =np.random.uniform(100.0)
 
         # Choose the standard deviations in the x-axis and y-axis directions
         # uniformly at random in the specified ranges.
-        sigma_x = np.random.uniform(MIN_SIGMA_X, MAX_SIGMA_X)
+        sigma_x =np.random.uniform(MIN_SIGMA_X, MAX_SIGMA_X)
         sigma_y = np.random.uniform(MIN_SIGMA_Y, MAX_SIGMA_Y)
 
         # Add the scaled multivariate Gaussian distribution to the vector of
         # soil moisture dissipation rates.
         dr += 0.4 * (np.exp(-((X[0] - mu_x) ** 2) / (2 * (sigma_x ** 2))
               - ((X[1] - mu_y) ** 2) / (2 * (sigma_y ** 2))))
+
 
     # Normalize dissipation rates so that they are between 0 and 1.
     return np.clip(dr, 0.0, 1.0)
@@ -112,6 +113,8 @@ class Plant(object):
         # Soil moisture cannot be negative.
         elif self.soil_moisture<0:
             self.soil_moisture = 0
+        else:
+            self.soil_moisture=4
 
         # Color the new leaves.
         self.color()
@@ -124,8 +127,10 @@ class Plant(object):
         if self.soil_moisture>0 and self.soil_moisture<4:
             colors = [0, 153/256.0, 0, 0.2] + np.random.uniform(-.2, .2, (num_leaves, 4)) + [-10/256.0, 0, 0, 0]
         # We use shades of yellow if the soil moisture is zero.
-        else:
+        elif self.soil_moisture==0:
             colors = [128/256.0, 128/256.0, 0/256.0, 1] + np.random.uniform(-.1, .1, (num_leaves, 4))
+        else:
+            colors = [151/256.0, 180/256.0, 63/256.0, 1] + np.random.uniform(-.1, .1, (num_leaves, 4))
 
         colors = colors.tolist()
 
@@ -162,7 +167,7 @@ class Vineyard(object):
         self.dissipation_rate = soil_variation(self.vine_positions.T)
         
         # Irrigation rate vector (one irrigation rate per plant).
-        self.irrigation_rate = 0.5 * np.ones(self.vine_positions.shape[0])
+        self.irrigation_rate = 0.4 * np.ones(self.vine_positions.shape[0])
         
         # Starting soil moisture level for each plant.
         init_soil_moisture = 1
@@ -181,7 +186,8 @@ class Vineyard(object):
         # Legend.
         df=self.fig.colorbar(sc,fraction=0.046, pad=0.04)
         df.ax.set_yticklabels(['slow','','','','','', 'fast'])
-        
+        # df=pd.DataFrame(dr)
+        # print(df)
         # Keep track of the current day.
         self.time = 0
         
@@ -209,6 +215,10 @@ class Vineyard(object):
 
             sizes.append(vine.leaf_size)
             moistures.append(vine.soil_moisture)
+            # m = np.asarray([moistures])
+            # # m = np.asarray([moistures]).reshape(20,10)
+            # print(m.shape)
+            # print(pd.DataFrame(m))
 
         # Create synthetic aerial image.
         scat1 = self.ax1.scatter(leafpositions[:, 0], leafpositions[:, 1],
@@ -221,8 +231,11 @@ class Vineyard(object):
         # Increment the timestep.
         self.time += 1
         print(self.time)
+        # text = input("prompt")  # Python 3
+        
 
     # Create an animation showing plant growth over time.
     def animate(self):
         anim = FuncAnimation(self.fig, self.update)
         plt.show()
+
