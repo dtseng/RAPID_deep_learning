@@ -312,12 +312,16 @@ def main():
         fixed_prediction_irrigation(predictor, noise="spatial", spatial_rate=spatial_rate)
     spatial_time = time.time() - spatial_time
     """
+
+    delay_time = time.time()
     for delay in DELAYS:
         print("{} TIME DELAY: {} {}".format("-"*35, delay, "-"*35))
         precision_irrigation_delays(predictor, delay)
+    delay_time = time.time() - delay_time
     print("Total Runtime: {} Mins".format((time.time() - start_time)/60))
     # print("Gaussian Runtime: {} Mins".format(adjust_time/60))
     # print("Spatial Runtime: {} Mins".format(spatial_time/60))
+    print("Delay Runtime: {} Mins".format(delay_time/60))
 
 if __name__ == '__main__':
     main()
